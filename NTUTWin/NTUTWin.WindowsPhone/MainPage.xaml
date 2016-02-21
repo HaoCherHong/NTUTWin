@@ -1,0 +1,62 @@
+﻿<Page
+    x:Class="NTUTWin.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:NTUTWin"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    Loaded="Page_Loaded">
+
+    <Page.BottomAppBar>
+        <CommandBar>
+            <CommandBar.PrimaryCommands>
+                <AppBarToggleButton Name="searchAppBarToggleButton" Icon="Find" Label="查詢" Checked="searchAppBarToggleButton_Checked" Unchecked="searchAppBarToggleButton_Unchecked" />
+            </CommandBar.PrimaryCommands>
+            <CommandBar.SecondaryCommands>
+                <AppBarButton Name="aboutAppBarButton" Icon="Help" Label="關於" Click="aboutAppBarButton_Click"/>
+                <AppBarButton Name="rateAndReviewAppBarButton" Icon="Favorite" Label="意見與評分" Click="rateAndReviewAppBarButton_Click"/>
+            </CommandBar.SecondaryCommands>
+        </CommandBar>
+    </Page.BottomAppBar>
+    
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <ScrollViewer Grid.Row="0">
+            <StackPanel Orientation="Vertical">
+                <TextBlock x:Name="searchResultLabelTextBlock" FontSize="32"/>
+                <Grid Name="scheduleGrid" Height="Auto" Margin="0, 0, 0, 10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition x:Name="saturdayColumnDefinition"  Width="*"/>
+                        <ColumnDefinition x:Name="sundayColumnDifinition" Width="*"/>
+                    </Grid.ColumnDefinitions>
+                </Grid>
+
+                <TextBlock Name="unscheduledCoursesTextBlock" Text="其他" FontSize="24" Margin="10, 0, 10, 0"/>
+                <GridView Name="unscheduledCoursesGrid" Margin="10, 0, 10, 0"/>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <Border  Name="searchGrid" Grid.Row="1" Visibility="Collapsed" Background="#222" Padding="15, 15, 15, 10">
+            <StackPanel>
+                <TextBlock Text="查課表" FontSize="24"/>
+                <TextBox Name="searchForIdTextBox" PlaceholderText="查詢學號" InputScope="Search" KeyUp="searchForIdTextBox_KeyUp"/>
+                <ComboBox x:Name="semesterComboBox" PlaceholderText="請選擇學期" SelectionChanged="semesterComboBox_SelectionChanged"/>
+            </StackPanel>
+        </Border>
+
+    </Grid>
+
+    
+</Page>

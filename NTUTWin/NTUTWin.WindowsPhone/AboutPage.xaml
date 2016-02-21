@@ -1,0 +1,34 @@
+﻿<Page
+    x:Class="NTUTWin.AboutPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:NTUTWin"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Background="{ThemeResource ApplicationPageBackgroundThemeBrush}"
+    Loaded="Page_Loaded">
+
+    <Grid x:Name="LayoutRoot">
+
+        <Grid.ChildrenTransitions>
+            <TransitionCollection>
+                <EntranceThemeTransition/>
+            </TransitionCollection>
+        </Grid.ChildrenTransitions>
+
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="關於" Margin="19,-6.5,0,26.5" Style="{ThemeResource HeaderTextBlockStyle}" CharacterSpacing="{ThemeResource PivotHeaderItemCharacterSpacing}"/>
+
+        <Grid Grid.Row="1" x:Name="ContentRoot" Margin="19,9.5,19,0">
+            <StackPanel>
+                <TextBlock Name="aboutTextBlock" Text="NTUTWin&#x0a;版本：&#x0a;作者：Hao-Cher Hong&#x0a;" FontSize="14"/>
+                <HyperlinkButton Content="聯絡作者" NavigateUri="http://lucher.club/?utm_source=NTUTWin&amp;utm_medium=referral&amp;utm_campaign=AboutPage" Click="HyperlinkButton_Click"/>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</Page>
