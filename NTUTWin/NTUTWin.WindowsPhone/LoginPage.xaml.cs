@@ -65,6 +65,7 @@ namespace NTUTWin
             {
                 await new MessageDialog(loginResult.Message).ShowAsync();
                 UpdateCapchaImage();
+                captchaTextBox.Text = "";
             }
 
             passwordTextBox.IsEnabled = loginAppBarButton.IsEnabled = true;

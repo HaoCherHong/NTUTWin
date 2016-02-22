@@ -126,7 +126,7 @@ namespace NTUTWin
                         {
                             maxTime = Math.Max(maxTime, time);
 
-                            var border = GetCourseElement(course, time);
+                            var border = GetCourseElement(course, time, day);
                             
                             Grid.SetColumn(border, day + 1);
                             Grid.SetRow(border, time);
@@ -153,7 +153,7 @@ namespace NTUTWin
                 scheduleGrid.RowDefinitions[r].Height = new GridLength(0);
         }
 
-        private FrameworkElement GetCourseElement(Course course, int time)
+        private FrameworkElement GetCourseElement(Course course, int time, int day = -1)
         {
             var textBlock = new TextBlock();
 
@@ -196,7 +196,13 @@ namespace NTUTWin
 
                 await new MessageDialog(content, course.Name).ShowAsync();
             };
-            var backColor = new SolidColorBrush(Color.FromArgb(128, 128, 128, 128));
+
+            Brush backColor;
+            if(DateTime.Today.DayOfWeek == (DayOfWeek)(day + 1 % 7))
+                backColor = Application.Current.Resources["PhoneAccentBrush"] as Brush;
+            else
+                backColor = new SolidColorBrush(Color.FromArgb(128, 128, 128, 128));
+            
             border.Background = backColor;
             border.Padding = new Thickness(5);
             border.Margin = new Thickness(1);
