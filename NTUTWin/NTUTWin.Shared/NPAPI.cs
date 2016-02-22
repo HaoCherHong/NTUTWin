@@ -6,6 +6,7 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
+using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.UI.Xaml;
@@ -230,7 +231,7 @@ namespace NTUTWin
             return lSB;
         }
 
-        public static async Task<BitmapImage> GetCaptchaImage()
+        public static async Task<WriteableBitmap> GetCaptchaImage()
         {
             //Check if we have JSESSIONID
             var roamingSettings = Windows.Storage.ApplicationData.Current.RoamingSettings;
@@ -238,7 +239,8 @@ namespace NTUTWin
                 await Request("https://nportal.ntut.edu.tw/", "GET");
 
             var response = await Request("https://nportal.ntut.edu.tw/authImage.do", "GET");
-            BitmapImage captchaImage = await ConvertStreamToBitmapImage(response.GetResponseStream());
+            //BitmapImage captchaImage = await ConvertStreamToBitmapImage(response.GetResponseStream());
+            WriteableBitmap captchaImage = await ConvertStreamToWritableBitmap(response.GetResponseStream());
             response.Dispose();
             return captchaImage;
         }
@@ -264,6 +266,16 @@ namespace NTUTWin
             bitmapImage.SetSource(a1);
             stream.Dispose();
             return bitmapImage;
+        }
+
+        private static async Task<WriteableBitmap> ConvertStreamToWritableBitmap(Stream stream)
+        {
+            WriteableBitmap writableBitmap = new WriteableBitmap(90, 30);
+            MemoryStream ms = new MemoryStream();
+            stream.CopyTo(ms);
+            IRandomAccessStream a1 = await ConvertToRandomAccessStream(ms);
+            writableBitmap.SetSource(a1);
+            return writableBitmap;
         }
 
         private static async Task<string> ConvertStreamToString(Stream stream, bool useBig5Encoding = false)

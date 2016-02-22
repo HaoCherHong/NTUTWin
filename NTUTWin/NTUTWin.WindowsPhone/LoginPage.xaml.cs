@@ -1,9 +1,13 @@
 ﻿using System;
+using System.IO;
+using System.Runtime.InteropServices.WindowsRuntime;
+using System.Threading.Tasks;
 using Windows.UI.Popups;
 using Windows.UI.ViewManagement;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Media.Imaging;
+using WindowsPreview.Media.Ocr;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -16,6 +20,7 @@ namespace NTUTWin
     {
 
         private StatusBarProgressIndicator progressbar = StatusBar.GetForCurrentView().ProgressIndicator;
+        private OcrEngine ocrEngine = new OcrEngine(OcrLanguage.English);
 
         public LoginPage()
         {
@@ -65,7 +70,7 @@ namespace NTUTWin
             {
                 await new MessageDialog(loginResult.Message).ShowAsync();
                 UpdateCapchaImage();
-                captchaTextBox.Text = "";
+                //captchaTextBox.Text = "";
             }
 
             passwordTextBox.IsEnabled = loginAppBarButton.IsEnabled = true;
@@ -75,8 +80,53 @@ namespace NTUTWin
         private async void UpdateCapchaImage()
         {
             captchaImage.Opacity = 0.5;
-            captchaImage.Source = await NPAPI.GetCaptchaImage();
+            var captchaBitmapImage = await NPAPI.GetCaptchaImage();
+            var clearImage = GetClearImage(captchaBitmapImage);
+            
+            captchaImage.Source = clearImage;
+
+            captchaTextBox.Text = await GetCaptchaText(clearImage);
+
+            if(string.IsNullOrEmpty(captchaTextBox.Text))
+            {
+                UpdateCapchaImage();
+                return;
+            }
             captchaImage.Opacity = 1;
+        }
+
+        private WriteableBitmap GetClearImage(WriteableBitmap source)
+        {
+            //Leave only white pixels
+            var bytes = source.ToByteArray();
+            for (var i = 0; i < bytes.Length; i += 4)
+                if (!(bytes[i] == 255 && bytes[i + 1] == 255 && bytes[i + 2] == 255))
+                    bytes[i] = bytes[i + 1] = bytes[i + 2] = 0;
+
+            //Resize to recognizable size
+            return new WriteableBitmap(90, 30).FromByteArray(bytes).Resize(300, 100, WriteableBitmapExtensions.Interpolation.Bilinear);
+        }
+
+        async Task<string> GetCaptchaText(WriteableBitmap target)
+        {
+            OcrResult data = await ocrEngine.RecognizeAsync((uint)target.PixelHeight, (uint)target.PixelWidth, ConvertBitmapToByteArray(target));
+            string result = "";
+            if(data.Lines != null)
+                foreach (OcrLine item in data.Lines)
+                    foreach (OcrWord inneritem in item.Words)
+                        result += inneritem.Text;
+            result = result.ToLower();
+            return result;
+        }
+
+        private byte[] ConvertBitmapToByteArray(WriteableBitmap bitmap)
+        {
+            using (Stream stream = bitmap.PixelBuffer.AsStream())
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                stream.CopyTo(memoryStream);
+                return memoryStream.ToArray();
+            }
         }
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
