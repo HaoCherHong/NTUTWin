@@ -263,18 +263,21 @@ namespace NTUTWin
             MemoryStream ms = new MemoryStream();
             stream.CopyTo(ms);
             IRandomAccessStream a1 = await ConvertToRandomAccessStream(ms);
-            bitmapImage.SetSource(a1);
+            await bitmapImage.SetSourceAsync(a1);
             stream.Dispose();
             return bitmapImage;
         }
 
         private static async Task<WriteableBitmap> ConvertStreamToWritableBitmap(Stream stream)
         {
-            WriteableBitmap writableBitmap = new WriteableBitmap(90, 30);
             MemoryStream ms = new MemoryStream();
             stream.CopyTo(ms);
             IRandomAccessStream a1 = await ConvertToRandomAccessStream(ms);
-            writableBitmap.SetSource(a1);
+            BitmapImage bitmapImage = new BitmapImage();
+            await bitmapImage.SetSourceAsync(a1);
+
+            WriteableBitmap writableBitmap = new WriteableBitmap(bitmapImage.PixelWidth, bitmapImage.PixelHeight);
+            await writableBitmap.SetSourceAsync(a1.CloneStream());
             return writableBitmap;
         }
 

@@ -87,6 +87,7 @@ namespace NTUTWin
 
             captchaTextBox.Text = await GetCaptchaText(clearImage);
 
+            //If OCR failed, change captcha image
             if(string.IsNullOrEmpty(captchaTextBox.Text))
             {
                 UpdateCapchaImage();
@@ -104,7 +105,7 @@ namespace NTUTWin
                     bytes[i] = bytes[i + 1] = bytes[i + 2] = 0;
 
             //Resize to recognizable size
-            return new WriteableBitmap(90, 30).FromByteArray(bytes).Resize(300, 100, WriteableBitmapExtensions.Interpolation.Bilinear);
+            return new WriteableBitmap(source.PixelWidth, source.PixelHeight).FromByteArray(bytes).Resize(300, 100, WriteableBitmapExtensions.Interpolation.Bilinear);
         }
 
         async Task<string> GetCaptchaText(WriteableBitmap target)
