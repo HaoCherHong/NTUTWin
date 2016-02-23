@@ -65,7 +65,6 @@ namespace NTUTWin
             }
             else
             {
-                await new MessageDialog(coursesRequest.Message).ShowAsync();
                 if (coursesRequest.Error == NPAPI.RequestResult.ErrorType.Unauthorized)
                 {
                     //Send GA Event
@@ -73,6 +72,8 @@ namespace NTUTWin
 
                     Frame.Navigate(typeof(LoginPage));
                 }
+                else
+                    await new MessageDialog(coursesRequest.Message).ShowAsync();
             }
         }
 
@@ -236,11 +237,14 @@ namespace NTUTWin
             }
             else
             {
-                await new MessageDialog(semestersRequest.Message).ShowAsync();
                 if (semestersRequest.Error == NPAPI.RequestResult.ErrorType.Unauthorized)
                     Frame.Navigate(typeof(LoginPage));
                 else
+                {
+                    await new MessageDialog(semestersRequest.Message).ShowAsync();
                     saveSearchId = false;
+                }
+                    
             }
             
             if (saveSearchId)
