@@ -2,7 +2,7 @@
     x:Class="NTUTWin.LoginPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-    xmlns:local="using:NTUTCourse"
+    xmlns:local="using:NTUTWin"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
@@ -19,13 +19,5 @@
         <TextBlock Text="登入校園入口網站" FontSize="32" Margin="10"/>
         <TextBox Name="idTextBox" PlaceholderText="使用者帳號" KeyUp="inputs_KeyUp"/>
         <PasswordBox Name="passwordTextBox" PlaceholderText="使用者密碼" KeyUp="inputs_KeyUp"/>
-        <Grid x:Name="captchaGrid" Tapped="captchaGrid_Tapped">
-            <Grid.ColumnDefinitions>
-                <ColumnDefinition Width="*"/>
-                <ColumnDefinition Width="Auto"/>
-            </Grid.ColumnDefinitions>
-            <TextBox Name="captchaTextBox" PlaceholderText="請輸入驗證碼" HorizontalAlignment="Stretch" Grid.Column="0" InputScope="Url" KeyUp="inputs_KeyUp"/>
-            <Image Name="captchaImage" Width="150" Grid.Column="1"/>
-        </Grid>
     </StackPanel>
 </Page>

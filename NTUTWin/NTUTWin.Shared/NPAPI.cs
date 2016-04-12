@@ -3,14 +3,15 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Net;
+using System.Net.Http;
+using System.Runtime.InteropServices.WindowsRuntime;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Windows.Graphics.Imaging;
 using Windows.Storage;
 using Windows.Storage.Streams;
-using Windows.UI.Xaml;
 using Windows.UI.Xaml.Media.Imaging;
+using WindowsPreview.Media.Ocr;
 
 namespace NTUTWin
 {
@@ -22,7 +23,10 @@ namespace NTUTWin
             {
                 None,
                 Unauthorized,
-                ParsingFailed
+                ParsingFailed,
+                WrongIdPassword,
+                WrongCaptcha,
+                AccountLocked
             }
 
             public RequestResult(bool success, ErrorType error, string message)
@@ -62,6 +66,9 @@ namespace NTUTWin
         // Big5 to Unicode mapping table
         private static Dictionary<int, int> big5UnicodeMap;
 
+        //OCR Engine
+        private static OcrEngine ocrEngine = new OcrEngine(OcrLanguage.English);
+
         private static async Task<Dictionary<int, int>> CreateBig5ToUnicodeDictionary()
         {
             StorageFile file = await StorageFile.GetFileFromApplicationUriAsync(
@@ -85,36 +92,77 @@ namespace NTUTWin
             return int.Parse(hexString, System.Globalization.NumberStyles.HexNumber);
         }
 
-        public static async Task<RequestResult> LoginNPortal(string id, string password, string captcha)
+        public static async Task<RequestResult> LoginNPortal(string id, string password)
         {
+            string captchaText;
+            do
+            {
+                var captchaImage = await GetCaptchaImage();
+                captchaText = await GetCaptchaText(captchaImage);
+            } while (string.IsNullOrEmpty(captchaText) || captchaText.Length != 4);
+
             var response = await Request("https://nportal.ntut.edu.tw/login.do", "POST", new Dictionary<string, object>()
             {
                 {"muid", id },
                 {"mpassword", password },
-                {"authcode", captcha }
+                {"authcode", captchaText }
             });
 
-            string responseString = await ConvertStreamToString(response.GetResponseStream());
+            string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync());
             response.Dispose();
 
             bool success = false;
             string message = null;
+            RequestResult.ErrorType errorType = RequestResult.ErrorType.None;
 
             if (responseString.Contains("登入失敗"))
-                message = Regex.Match(responseString, "\n\n([^\n<]+)<br>").Groups[1].Value;
+            {
+                if (responseString.Contains("密碼錯誤"))
+                {
+                    errorType = RequestResult.ErrorType.WrongIdPassword;
+                    message = "帳號密碼錯誤";
+                }
+                else if (responseString.Contains("驗證碼"))
+                {
+                    errorType = RequestResult.ErrorType.WrongCaptcha;
+                    message = "驗證碼錯誤";
+
+                    //Retry
+                    return await LoginNPortal(id, password);
+                }
+                else if (responseString.Contains("帳號已被鎖住"))
+                {
+                    errorType = RequestResult.ErrorType.AccountLocked;
+                    message = "嘗試錯誤太多次，帳號已被鎖定10分鐘";
+                }
+            }
             else
             {
                 message = "登入成功";
                 success = true;
             }
 
-            return new RequestResult(success, RequestResult.ErrorType.None, message);
+            return new RequestResult(success, errorType, message);
+        }
+
+        public static async Task<RequestResult> LogoutNPortal()
+        {
+            var response = await Request("https://nportal.ntut.edu.tw/logout.do", "GET");
+
+            if(response.IsSuccessStatusCode)
+            {
+                var roamingSettings = ApplicationData.Current.RoamingSettings;
+                //roamingSettings.Values.Remove("password");
+                roamingSettings.Values.Remove("JSESSIONID");
+            }
+
+            return new RequestResult(response.IsSuccessStatusCode, RequestResult.ErrorType.None, null);
         }
 
         public static async Task LoginAps()
         {
             var response = await Request("http://nportal.ntut.edu.tw/ssoIndex.do?apUrl=http://aps.ntut.edu.tw/course/tw/courseSID.jsp&apOu=aa_0010&sso=true", "GET");
-            string responseString = await ConvertStreamToString(response.GetResponseStream());
+            string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync());
             response.Dispose();
 
             var matches = Regex.Matches(responseString, "<input type='hidden' name='([a-zA-Z]+)' value='([^']+)'>");
@@ -124,11 +172,28 @@ namespace NTUTWin
                 postData.Add(match.Groups[1].Value, match.Groups[2].Value);
 
             response = await Request("http://aps.ntut.edu.tw/course/tw/courseSID.jsp", "POST", postData);
-            responseString = await ConvertStreamToString(response.GetResponseStream(), true);
+            responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync(), true);
             response.Dispose();
 
             Debug.WriteLine(responseString);
         }
+
+        public static async Task<RequestResult> BackgroundLogin()
+        {
+            var roamingSettings = ApplicationData.Current.RoamingSettings;
+            if(!roamingSettings.Values.ContainsKey("id") || !roamingSettings.Values.ContainsKey("password"))
+                return new RequestResult(false, RequestResult.ErrorType.Unauthorized, null);
+
+            string id = (string)roamingSettings.Values["id"], 
+                password = (string)roamingSettings.Values["password"];
+
+            RequestResult result = await LoginNPortal(id, password);
+
+            if (result.Success)
+                await LoginAps();
+
+            return result;
+        } 
 
         public static async Task<GetSemestersResult> GetSemesters(string id)
         {
@@ -137,7 +202,7 @@ namespace NTUTWin
                 {"code", id},
                 {"format", -3}
             });
-            string responseString = await ConvertStreamToString(response.GetResponseStream(), true);
+            string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync(), true);
             response.Dispose();
 
             //Check if connection is expired
@@ -171,7 +236,7 @@ namespace NTUTWin
         public static async Task<RequestResult<List<Course>>> GetCourses(string id, int year, int semester)
         {
             var response = await Request(string.Format("http://aps.ntut.edu.tw/course/tw/Select.jsp?format=-2&code={0}&year={1}&sem={2}", id, year, semester), "GET");
-            string responseString = await ConvertStreamToString(response.GetResponseStream(), true);
+            string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync(), true);
             response.Dispose();
 
             if (responseString.Contains("《尚未登錄入口網站》 或 《應用系統連線已逾時》"))
@@ -239,10 +304,11 @@ namespace NTUTWin
                 await Request("https://nportal.ntut.edu.tw/", "GET");
 
             var response = await Request("https://nportal.ntut.edu.tw/authImage.do", "GET");
-            //BitmapImage captchaImage = await ConvertStreamToBitmapImage(response.GetResponseStream());
-            WriteableBitmap captchaImage = await ConvertStreamToWritableBitmap(response.GetResponseStream());
+            //BitmapImage captchaImage = await ConvertStreamToBitmapImage(await response.Content.ReadAsStreamAsync());
+            WriteableBitmap captchaImage = await ConvertStreamToWritableBitmap(await response.Content.ReadAsStreamAsync());
             response.Dispose();
-            return captchaImage;
+
+            return GetClearImage(captchaImage);
         }
 
         private static async Task<IRandomAccessStream> ConvertToRandomAccessStream(MemoryStream memoryStream)
@@ -294,28 +360,33 @@ namespace NTUTWin
             }
         }
 
-        private static async Task<WebResponse> Request(string url, string method, Dictionary<string, object> parameters = null)
+        private static async Task<HttpResponseMessage> Request(string url, string method, Dictionary<string, object> parameters = null)
         {
+            method = method.ToLower();
+            if (method != "post" && method != "get")
+                throw new ArgumentException("Unsuportted method");
+
             Debug.WriteLine(url);
 
-            //Create request
-            HttpWebRequest request = WebRequest.CreateHttp(url);
 
-            request.Headers[HttpRequestHeader.IfModifiedSince] = (DateTime.UtcNow.Subtract(new DateTime(1970, 1, 1))).TotalSeconds.ToString();
-
-            request.Method = method;
+            CookieContainer cookieContainer = new CookieContainer();
+            HttpClientHandler handler = new HttpClientHandler();
+            handler.CookieContainer = cookieContainer;
+            
+            HttpClient client = new HttpClient(handler);
+            client.DefaultRequestHeaders.IfModifiedSince = new DateTimeOffset(new DateTime(1970, 1, 1));
 
             //Get roaming settings
-            var roamingSettings = Windows.Storage.ApplicationData.Current.RoamingSettings;
+            var roamingSettings = ApplicationData.Current.RoamingSettings;
 
             var sessionId = (string)roamingSettings.Values["JSESSIONID"];
             if (sessionId != null)
-                request.Headers["Cookie"] = "JSESSIONID=" + sessionId;
+                cookieContainer.Add(new Uri(url), new Cookie("JSESSIONID", sessionId));
 
+            string requestData = null;
             if (parameters != null)
             {
                 var enumerator = parameters.Keys.GetEnumerator();
-                string requestData = null;
 
                 foreach (string name in parameters.Keys)
                 {
@@ -340,46 +411,76 @@ namespace NTUTWin
                             requestData += "&" + WebUtility.UrlEncode(name) + "=" + WebUtility.UrlEncode(value.ToString());
                     }
                 }
+            }
 
-                if (requestData != null)
+            //Start fetching response
+            StringContent postContent = null;
+            if(requestData != null)
+                postContent = new StringContent(requestData, Encoding.UTF8, "application/x-www-form-urlencoded");
+
+            var response = await (method == "get" ?  client.GetAsync(url) : client.PostAsync(url, postContent));
+
+            IEnumerable<string> values;
+            if (response.Headers.TryGetValues("Set-Cookie", out values))
+            {
+                var it = values.GetEnumerator();
+                if (it.MoveNext())
                 {
-                    if (method == "POST")
+                    var setCookieHeader = it.Current;
+                    var match = Regex.Match(setCookieHeader, "JSESSIONID=([a-zA-Z0-9-]+)");
+                    if (match.Success)
                     {
-                        request.ContentType = "application/x-www-form-urlencoded";
+                        sessionId = match.Groups[1].Value;
+                        //Save to roaming settings
+                        if (roamingSettings.Values.ContainsKey("JSESSIONID"))
+                            roamingSettings.Values["JSESSIONID"] = sessionId;
+                        else
+                            roamingSettings.Values.Add("JSESSIONID", sessionId);
 
-                        byte[] bytes = Encoding.UTF8.GetBytes(requestData);
-
-                        var requestStream = await request.GetRequestStreamAsync();
-                        requestStream.Write(bytes, 0, bytes.Length);
-
-                        requestStream.Dispose();
-
-                        Debug.WriteLine(WebUtility.UrlDecode(requestData));
+                        Debug.WriteLine("New JSESSIONID: " + sessionId);
                     }
                 }
             }
 
-            //Start fetching response
-            var response = await request.GetResponseAsync();
-
-            string setCookieHeader = response.Headers["Set-Cookie"];
-            if (setCookieHeader != null)
-            {
-                var match = Regex.Match(setCookieHeader, "JSESSIONID=([a-zA-Z0-9-]+)");
-                if (match.Success)
-                {
-                    sessionId = match.Groups[1].Value;
-                    //Save to roaming settings
-                    if (roamingSettings.Values.ContainsKey("JSESSIONID"))
-                        roamingSettings.Values["JSESSIONID"] = sessionId;
-                    else
-                        roamingSettings.Values.Add("JSESSIONID", sessionId);
-
-                    Debug.WriteLine("New JSESSIONID: " + sessionId);
-                }
-            }
-
             return response;
+        }
+
+        #endregion
+
+        #region captcha helper
+
+        private static WriteableBitmap GetClearImage(WriteableBitmap source)
+        {
+            //Leave only white pixels
+            var bytes = source.ToByteArray();
+            for (var i = 0; i < bytes.Length; i += 4)
+                if (!(bytes[i] == 255 && bytes[i + 1] == 255 && bytes[i + 2] == 255))
+                    bytes[i] = bytes[i + 1] = bytes[i + 2] = 0;
+
+            //Resize to recognizable size
+            return new WriteableBitmap(source.PixelWidth, source.PixelHeight).FromByteArray(bytes).Resize(300, 100, WriteableBitmapExtensions.Interpolation.Bilinear);
+        }
+
+        private static byte[] ConvertBitmapToByteArray(WriteableBitmap bitmap)
+        {
+            using (Stream stream = bitmap.PixelBuffer.AsStream())
+            using (MemoryStream memoryStream = new MemoryStream())
+            {
+                stream.CopyTo(memoryStream);
+                return memoryStream.ToArray();
+            }
+        }
+
+        private static async Task<string> GetCaptchaText(WriteableBitmap target)
+        {
+            OcrResult data = await ocrEngine.RecognizeAsync((uint)target.PixelHeight, (uint)target.PixelWidth, ConvertBitmapToByteArray(target));
+            string result = "";
+            if (data.Lines != null)
+                foreach (OcrLine item in data.Lines)
+                    foreach (OcrWord inneritem in item.Words)
+                        result += inneritem.Text;
+            result = result.ToLower().Replace('1', 'l');
+            return result;
         }
 
         #endregion

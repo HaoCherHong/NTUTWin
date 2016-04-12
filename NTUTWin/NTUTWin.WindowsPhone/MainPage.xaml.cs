@@ -70,7 +70,13 @@ namespace NTUTWin
                     //Send GA Event
                     App.Current.GATracker.SendEvent("Session", "Session Expired", null, 0);
 
-                    Frame.Navigate(typeof(LoginPage));
+                    //Try background login
+                    var result = await NPAPI.BackgroundLogin();
+                    if (result.Success)
+                        await GetSchedule(semester);
+                    else
+                        Frame.Navigate(typeof(LoginPage));
+                    
                 }
                 else
                     await new MessageDialog(coursesRequest.Message).ShowAsync();
@@ -238,7 +244,17 @@ namespace NTUTWin
             else
             {
                 if (semestersRequest.Error == NPAPI.RequestResult.ErrorType.Unauthorized)
-                    Frame.Navigate(typeof(LoginPage));
+                {
+                    //Send GA Event
+                    App.Current.GATracker.SendEvent("Session", "Session Expired", null, 0);
+
+                    //Try background login
+                    var result = await NPAPI.BackgroundLogin();
+                    if (result.Success)
+                        await SearchForId(id);
+                    else
+                        Frame.Navigate(typeof(LoginPage));
+                }
                 else
                 {
                     await new MessageDialog(semestersRequest.Message).ShowAsync();
@@ -301,8 +317,8 @@ namespace NTUTWin
             if (roamingSettings.Values.ContainsKey("courses"))
                 FillCoursesIntoGrid(JsonConvert.DeserializeObject<List<Course>>(roamingSettings.Values["courses"].ToString()));
 
-            if (!roamingSettings.Values.ContainsKey("JSESSIONID"))
-                Frame.Navigate(typeof(LoginPage));
+            //if (!roamingSettings.Values.ContainsKey("JSESSIONID"))
+            //    Frame.Navigate(typeof(LoginPage));
 
             searchAppBarToggleButton.IsChecked = !roamingSettings.Values.ContainsKey("courses");
             searchAppBarToggleButton.Visibility = roamingSettings.Values.ContainsKey("courses") ? Visibility.Visible : Visibility.Collapsed;
@@ -339,6 +355,15 @@ namespace NTUTWin
         private async void rateAndReviewAppBarButton_Click(object sender, RoutedEventArgs e)
         {
             await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-windows-store:reviewapp?appid=5c805945-21cb-4160-9a45-1de3ec408a9d"));
+        }
+
+        private async void logoutAppBarButton_Click(object sender, RoutedEventArgs e)
+        {
+            var result = await NPAPI.LogoutNPortal();
+            if(result.Success)
+                Frame.Navigate(typeof(LoginPage));
+            else
+                await new MessageDialog(result.Message).ShowAsync();
         }
     }
 }

@@ -17,6 +17,7 @@
             <CommandBar.SecondaryCommands>
                 <AppBarButton Name="aboutAppBarButton" Icon="Help" Label="關於" Click="aboutAppBarButton_Click"/>
                 <AppBarButton Name="rateAndReviewAppBarButton" Icon="Favorite" Label="意見與評分" Click="rateAndReviewAppBarButton_Click"/>
+                <AppBarButton Name="logoutAppBarButton" Icon="Clear" Label="登出" Click="logoutAppBarButton_Click"/>
             </CommandBar.SecondaryCommands>
         </CommandBar>
     </Page.BottomAppBar>
