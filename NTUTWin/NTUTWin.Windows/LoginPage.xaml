@@ -1,0 +1,23 @@
+﻿<Page
+    x:Class="NTUTWin.LoginPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:NTUTWin"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Loaded="Page_Loaded" >
+
+    <Page.BottomAppBar>
+        <CommandBar>
+            <AppBarButton Name="loginAppBarButton" Content="登入" Click="loginAppBarButton_Click" Icon="Forward"/>
+        </CommandBar>
+    </Page.BottomAppBar>
+
+    <StackPanel Orientation="Vertical" Margin="15">
+        <TextBlock Text="登入校園入口網站" FontSize="32" Margin="10"/>
+        <TextBox Name="idTextBox" PlaceholderText="使用者帳號" KeyUp="inputs_KeyUp"/>
+        <PasswordBox Name="passwordTextBox" PlaceholderText="使用者密碼" KeyUp="inputs_KeyUp"/>
+        <Button Name="loginButton" Content="登入" Click="loginAppBarButton_Click"/>
+    </StackPanel>
+</Page>
