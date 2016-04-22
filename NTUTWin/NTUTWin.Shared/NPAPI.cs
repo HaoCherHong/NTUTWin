@@ -255,6 +255,17 @@ namespace NTUTWin
             }
         }
 
+        public static async Task<RequestResult<Schedule>> GetSchedule()
+        {
+            var response = await Request("http://www.cc.ntut.edu.tw/~wwwoaa/oaa-nwww/oaa-cal/oaa-cal_099.html", "GET");
+            string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync(), false);
+            response.Dispose();
+
+            Schedule schedule = Schedule.Parse(responseString);
+
+            return new RequestResult<Schedule>(false, RequestResult.ErrorType.Unauthorized, null, schedule);
+        }
+
         #region connection helper
 
         private static async Task<StringBuilder> Big5ToUnicode(Stream s)

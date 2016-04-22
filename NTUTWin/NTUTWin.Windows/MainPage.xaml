@@ -39,16 +39,18 @@
 
         <Border Name="searchGrid" Grid.Row="1" Background="#222" Padding="20">
             <StackPanel>
-                <TextBlock Text="查課表" FontSize="24"/>
+                <TextBlock Text="查課表" FontSize="24" Margin="0,0,0,10"/>
                 <Grid>
                     <Grid.ColumnDefinitions>
                         <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <TextBox Name="searchForIdTextBox" PlaceholderText="查詢學號" InputScope="Search" KeyUp="searchForIdTextBox_KeyUp" Grid.Column="0"/>
-                    <Button Name="getSemestersButton" Content="更新學期" Grid.Column="1" Click="getSemestersButton_Click"/>
+                    <TextBox Name="searchForIdTextBox" PlaceholderText="查詢學號" InputScope="Search" KeyUp="searchForIdTextBox_KeyUp" Margin="0,0,10,0" Grid.Column="0"/>
+                    <ComboBox x:Name="semesterComboBox" PlaceholderText="請選擇學期" SelectionChanged="semesterComboBox_SelectionChanged" Margin="0,0,10,0" Grid.Column="1"/>
+                    <Button Name="getSemestersButton" Content="更新學期" Grid.Column="2" Click="getSemestersButton_Click"/>
                 </Grid>
-                <ComboBox x:Name="semesterComboBox" PlaceholderText="請選擇學期" SelectionChanged="semesterComboBox_SelectionChanged"/>
+                
             </StackPanel>
         </Border>
 
