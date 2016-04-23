@@ -106,6 +106,9 @@ namespace NTUTWin
                 {"muid", id },
                 {"mpassword", password },
                 {"authcode", captchaText }
+            }, new Dictionary<string, object>()
+            {
+                {"Referer", "https://nportal.ntut.edu.tw/index.do?thetime=2461345091046" }
             });
 
             string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync());
@@ -371,7 +374,7 @@ namespace NTUTWin
             }
         }
 
-        private static async Task<HttpResponseMessage> Request(string url, string method, Dictionary<string, object> parameters = null)
+        private static async Task<HttpResponseMessage> Request(string url, string method = "get", Dictionary<string, object> parameters = null, Dictionary<string, object> headers = null)
         {
             method = method.ToLower();
             if (method != "post" && method != "get")
@@ -386,6 +389,15 @@ namespace NTUTWin
             
             HttpClient client = new HttpClient(handler);
             client.DefaultRequestHeaders.IfModifiedSince = new DateTimeOffset(new DateTime(1970, 1, 1));
+
+            //Set headesr
+            if(headers != null)
+            {
+                foreach(string key in headers.Keys)
+                {
+                    client.DefaultRequestHeaders.Add(key, headers[key].ToString());
+                }
+            }
 
             //Get roaming settings
             var roamingSettings = ApplicationData.Current.RoamingSettings;
