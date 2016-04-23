@@ -8,7 +8,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d" Loaded="Page_Loaded">
 
-    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" VerticalAlignment="Stretch">
         <Grid Margin="20">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto"/>
@@ -18,15 +18,26 @@
                 <ColumnDefinition Width="Auto"/>
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
-            <TextBlock x:Name="titleTextBlock" FontSize="32" Text="104學年度行事曆" Grid.Row="0"/>
-            <controls:Calendar x:Name="calendar" FirstDayOfWeek="Monday" Grid.Row="1" Grid.Column="0" DisplayDateChanged="calendar_DisplayDateChanged" SelectedDatesChanged="calendar_SelectedDatesChanged"/>
-            <ListView x:Name="listView" Grid.Row="1" Grid.Column="1" SelectionChanged="listView_SelectionChanged">
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Setter Property="Padding" Value="10"/>
-                    </Style>
-                </ListView.ItemContainerStyle>
-            </ListView>
+            <TextBlock x:Name="titleTextBlock" FontSize="32" Text="104學年度行事曆" Margin="0,0,0,10" Grid.Row="0"/>
+            <StackPanel Orientation="Vertical" Margin="0,0,20,0" Grid.Row="1" Grid.Column="0" Width="285">
+                <Border Width="271" Height="265" HorizontalAlignment="Left">
+                    <Border Width="542" Height="530">
+                        <controls:Calendar x:Name="calendar" FirstDayOfWeek="Monday" DisplayDateChanged="calendar_DisplayDateChanged" SelectedDatesChanged="calendar_SelectedDatesChanged" RenderTransformOrigin="0,0">
+                            <controls:Calendar.RenderTransform>
+                                <CompositeTransform ScaleX="0.5" ScaleY="0.5"/>
+                            </controls:Calendar.RenderTransform>
+                        </controls:Calendar>
+                    </Border>
+                </Border>
+                <TextBlock Name="detailsTextBlock" FontSize="16" TextWrapping="Wrap" Margin="0,15,0,0"/>
+            </StackPanel>
+            <ListView x:Name="listView" SelectionChanged="listView_SelectionChanged"  Grid.Row="1" Grid.Column="1">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Padding" Value="10"/>
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                </ListView>
         </Grid>
     </Grid>
 </Page>

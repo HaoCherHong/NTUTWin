@@ -30,6 +30,7 @@ namespace NTUTWin
             var matches = regex.Matches(data);
             var eventRegex = new Regex("(?:<br \\/>)?\\s*\\(?([^\\)]+)\\)((?:(?!<br \\/>|\\(\\d).)+)", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Multiline);
             var dateRegex = new Regex("(\\d+)\\/(\\d+)");
+            var endCommaRegex = new Regex("、\\s?$", RegexOptions.Multiline);
             foreach(Match match in matches)
             {
                 var eventMatches = eventRegex.Matches(match.Groups[1].Value);
@@ -37,7 +38,7 @@ namespace NTUTWin
                 {
                     SchoolEvent schoolEvent = new SchoolEvent();
                     schoolEvent.timeString = eventMatch.Groups[1].Value.Replace('~', '-');
-                    schoolEvent.description = eventMatch.Groups[2].Value;
+                    schoolEvent.description = endCommaRegex.Replace(eventMatch.Groups[2].Value, "");
                     //Get date
                     var dateMatch = dateRegex.Match(schoolEvent.timeString);
                     int month = int.Parse(dateMatch.Groups[1].Value);

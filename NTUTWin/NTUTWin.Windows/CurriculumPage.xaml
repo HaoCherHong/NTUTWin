@@ -1,0 +1,59 @@
+﻿<Page
+    x:Class="NTUTWin.CurriculumPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:NTUTWin"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d" Loaded="Page_Loaded">
+
+    <Grid HorizontalAlignment="Stretch">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+        <ScrollViewer Grid.Row="0">
+            <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Margin="20">
+                <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
+                    <TextBlock x:Name="searchResultLabelTextBlock" Text="學期" FontSize="32" Margin="0,0,10,0"/>
+                    <Button Name="logoutButton" Content="登出" Click="logoutButton_Click"/>
+                </StackPanel>
+                <Grid Name="scheduleGrid" Height="Auto" HorizontalAlignment="Stretch" Margin="0, 0, 0, 10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition x:Name="saturdayColumnDefinition"  Width="*"/>
+                        <ColumnDefinition x:Name="sundayColumnDifinition" Width="*"/>
+                    </Grid.ColumnDefinitions>
+                </Grid>
+
+                <TextBlock Name="unscheduledCoursesTextBlock" Text="其他" FontSize="24" Margin="10, 0, 10, 0"/>
+                <GridView Name="unscheduledCoursesGrid" Margin="10, 0, 10, 0"/>
+
+            </StackPanel>
+        </ScrollViewer>
+
+        <Border Name="searchGrid" Grid.Row="1" Background="#222" Padding="20">
+            <StackPanel>
+                <TextBlock Text="查課表" FontSize="24" Margin="0,0,0,10"/>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <TextBox Name="searchForIdTextBox" PlaceholderText="查詢學號" InputScope="Search" KeyUp="searchForIdTextBox_KeyUp" Margin="0,0,10,0" Grid.Column="0"/>
+                    <ComboBox x:Name="semesterComboBox" PlaceholderText="請選擇學期" SelectionChanged="semesterComboBox_SelectionChanged" Margin="0,0,10,0" Grid.Column="1"/>
+                    <Button Name="getSemestersButton" Content="更新學期" Grid.Column="2" Click="getSemestersButton_Click"/>
+                </Grid>
+                
+            </StackPanel>
+        </Border>
+
+    </Grid>
+    
+</Page>

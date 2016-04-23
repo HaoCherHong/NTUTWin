@@ -30,6 +30,9 @@ namespace NTUTWin
 
         private async void Page_Loaded(object sender, RoutedEventArgs e)
         {
+            //Send GA View
+            App.Current.GATracker.SendView("SchedulePage");
+
             schedule = (await NPAPI.GetSchedule()).Data;
             calendar.DisplayDateStart = new DateTime(2016, 1, 1);
             calendar.DisplayDateEnd = new DateTime(2016, 12, 31);
@@ -59,8 +62,11 @@ namespace NTUTWin
         private void listView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var schoolEvent = listView.SelectedItem as Schedule.SchoolEvent;
-            if(schoolEvent != null)
+            if (schoolEvent != null)
+            {
                 calendar.SelectedDate = schoolEvent.date;
+                detailsTextBlock.Text = string.Format("時間：{0}\n{1}", schoolEvent.timeString, schoolEvent.description);
+            }
         }
     }
 }
