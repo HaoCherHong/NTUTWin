@@ -181,6 +181,26 @@ namespace NTUTWin
             Debug.WriteLine(responseString);
         }
 
+        public static async Task LoginSubSystem(string url)
+        {
+            var response = await Request("http://nportal.ntut.edu.tw/ssoIndex.do?apUrl=" + url, "GET");
+            string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync());
+            response.Dispose();
+
+            var matches = Regex.Matches(responseString, "<input type='hidden' name='([a-zA-Z]+)' value='([^']+)'>");
+            var target = Regex.Match(responseString, "action='([^']+)'").Groups[1].Value;
+
+            var postData = new Dictionary<string, object>();
+            foreach (Match match in matches)
+                postData.Add(match.Groups[1].Value, match.Groups[2].Value);
+
+            response = await Request(target, "POST", postData);
+            responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync(), true);
+            response.Dispose();
+
+            Debug.WriteLine(responseString);
+        }
+
         public static async Task<RequestResult> BackgroundLogin()
         {
             var roamingSettings = ApplicationData.Current.RoamingSettings;
@@ -193,7 +213,12 @@ namespace NTUTWin
             RequestResult result = await LoginNPortal(id, password);
 
             if (result.Success)
-                await LoginAps();
+            {
+                //Login aps
+                await LoginSubSystem("http://aps.ntut.edu.tw/course/tw/courseSID.jsp&apOu=aa_0010&sso=true");
+                //Login aps-stu
+                await LoginSubSystem("http://aps-stu.ntut.edu.tw/StuQuery/LoginSID.jsp&apOu=aa_003&sso=big5");
+            }
 
             return result;
         } 
@@ -267,6 +292,20 @@ namespace NTUTWin
             Schedule schedule = Schedule.Parse(responseString);
 
             return new RequestResult<Schedule>(false, RequestResult.ErrorType.Unauthorized, null, schedule);
+        }
+
+        public static async Task<RequestResult<MidAlerts>> GetMidAlerts()
+        {
+            var response = await Request("http://aps-stu.ntut.edu.tw/StuQuery/QrySCWarn.jsp", "GET");
+            string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync(), true);
+            response.Dispose();
+
+            if (responseString.Contains("應用系統已中斷連線，請重新由入口網站主畫面左方的主選單，點選欲使用之系統!"))
+                return new RequestResult<MidAlerts>(false, RequestResult.ErrorType.Unauthorized, "連線逾時", null);
+
+            var result = MidAlerts.Parse(responseString);
+
+            return new RequestResult<MidAlerts>(true, RequestResult.ErrorType.None, null, result);
         }
 
         #region connection helper
@@ -404,7 +443,10 @@ namespace NTUTWin
 
             var sessionId = (string)roamingSettings.Values["JSESSIONID"];
             if (sessionId != null)
-                cookieContainer.Add(new Uri(url), new Cookie("JSESSIONID", sessionId));
+            {
+                var uri = new Uri(url);
+                cookieContainer.Add(new Uri(uri.AbsoluteUri.Replace(uri.AbsolutePath, "")), new Cookie("JSESSIONID", sessionId));
+            }
 
             string requestData = null;
             if (parameters != null)

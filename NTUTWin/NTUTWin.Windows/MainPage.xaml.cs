@@ -51,6 +51,9 @@ namespace NTUTWin
                 case "行事曆":
                     frame.Navigate(typeof(SchedulePage));
                     break;
+                case "期中預警":
+                    frame.Navigate(typeof(MidAlertPage));
+                    break;
             }
         }
     }

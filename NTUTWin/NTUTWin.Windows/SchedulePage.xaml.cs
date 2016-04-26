@@ -47,6 +47,9 @@ namespace NTUTWin
 
         private void calendar_SelectedDatesChanged(object sender, SelectionChangedEventArgs e)
         {
+            if (listView.ItemsSource == null)
+                return;
+
             var date = calendar.SelectedDate;
             var monthSchedule = (List<Schedule.SchoolEvent>)listView.ItemsSource;
             foreach(Schedule.SchoolEvent schoolEvent in monthSchedule)

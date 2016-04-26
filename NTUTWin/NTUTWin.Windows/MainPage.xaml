@@ -28,6 +28,7 @@
                 </ListView.ItemContainerStyle>
                 <ListViewItem Name="CurriculumListViewItem">查課表</ListViewItem>
                 <ListViewItem Name="ScheduleListViewItem">行事曆</ListViewItem>
+                <ListViewItem>期中預警</ListViewItem>
             </ListView>
         </StackPanel>
         <Frame Name="frame" Grid.Column="1"></Frame>

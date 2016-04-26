@@ -37,6 +37,9 @@
                             <Setter Property="Padding" Value="10"/>
                         </Style>
                     </ListView.ItemContainerStyle>
+                    <ListView.Items>
+                        <ListViewItem>讀取中...</ListViewItem>
+                    </ListView.Items>
                 </ListView>
         </Grid>
     </Grid>

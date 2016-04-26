@@ -1,0 +1,50 @@
+﻿<Page
+    x:Class="NTUTWin.MidAlertPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:NTUTWin"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d" Loaded="Page_Loaded">
+
+    <Page.Resources>
+        <local:MidAlertListDataTemplateSelector x:Key="MidAlertListDataTEmplateSelector">
+            <local:MidAlertListDataTemplateSelector.AlertedTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Display}" VerticalAlignment="Center"/>
+                </DataTemplate>
+            </local:MidAlertListDataTemplateSelector.AlertedTemplate>
+            <local:MidAlertListDataTemplateSelector.UnAlertedTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Display}" VerticalAlignment="Center"/>
+                </DataTemplate>
+            </local:MidAlertListDataTemplateSelector.UnAlertedTemplate>
+            <local:MidAlertListDataTemplateSelector.UnSubmittedTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Display}" VerticalAlignment="Center"/>
+                </DataTemplate>
+            </local:MidAlertListDataTemplateSelector.UnSubmittedTemplate>
+        </local:MidAlertListDataTemplateSelector>
+    </Page.Resources>
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid Margin="20">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+            </Grid.RowDefinitions>
+            <TextBlock x:Name="titleTextBlock" FontSize="32" Text="期中預警" Margin="0,0,0,10" Grid.Row="0"/>
+            <ListView Name="listView" SelectionMode="None" IsItemClickEnabled="True" ItemTemplateSelector="{StaticResource MidAlertListDataTEmplateSelector}" Grid.Row="1" ItemClick="listView_ItemClick">
+                <ListView.ItemContainerStyle>
+                    <Style TargetType="ListViewItem">
+                        <Setter Property="Margin" Value="0"/>
+                        <Setter Property="Padding" Value="10"/>
+                    </Style>
+                </ListView.ItemContainerStyle>
+                <ListView.Items>
+                    <ListViewItem>讀取中...</ListViewItem>
+                </ListView.Items>
+            </ListView>
+        </Grid>
+    </Grid>
+</Page>
