@@ -24,4 +24,10 @@
   <ItemGroup>
     <Content Include="$(MSBuildThisFileDirectory)Assets\big5.txt" />
   </ItemGroup>
+  <ItemGroup>
+    <Page Include="$(MSBuildThisFileDirectory)AppResourceDictionary.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
+  </ItemGroup>
 </Project>

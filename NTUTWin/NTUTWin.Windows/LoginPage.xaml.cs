@@ -51,10 +51,6 @@ namespace NTUTWin
                 else
                     roamingSettings.Values.Add("password", password);
 
-                //Login Aps
-
-                await NPAPI.LoginAps();
-
                 //Go to previous page
                 if (Frame.CanGoBack)
                     Frame.GoBack();

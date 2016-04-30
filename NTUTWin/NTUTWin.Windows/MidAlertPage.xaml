@@ -8,43 +8,67 @@
     mc:Ignorable="d" Loaded="Page_Loaded">
 
     <Page.Resources>
-        <local:MidAlertListDataTemplateSelector x:Key="MidAlertListDataTEmplateSelector">
-            <local:MidAlertListDataTemplateSelector.AlertedTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding Display}" VerticalAlignment="Center"/>
-                </DataTemplate>
-            </local:MidAlertListDataTemplateSelector.AlertedTemplate>
-            <local:MidAlertListDataTemplateSelector.UnAlertedTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding Display}" VerticalAlignment="Center"/>
-                </DataTemplate>
-            </local:MidAlertListDataTemplateSelector.UnAlertedTemplate>
-            <local:MidAlertListDataTemplateSelector.UnSubmittedTemplate>
-                <DataTemplate>
-                    <TextBlock Text="{Binding Display}" VerticalAlignment="Center"/>
-                </DataTemplate>
-            </local:MidAlertListDataTemplateSelector.UnSubmittedTemplate>
-        </local:MidAlertListDataTemplateSelector>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="ResourceDictionary.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+            <local:MidAlertListDataTemplateSelector x:Key="MidAlertListDataTEmplateSelector">
+                <local:MidAlertListDataTemplateSelector.SubmittedTemplate>
+                    <DataTemplate>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding CourseName}" Grid.Column="0" Margin="0,0,10,0"/>
+                            <TextBlock Text="{Binding Ratio}" Grid.Column="1"/>
+                        </Grid>
+                    </DataTemplate>
+                </local:MidAlertListDataTemplateSelector.SubmittedTemplate>
+                <local:MidAlertListDataTemplateSelector.UnSubmittedTemplate>
+                    <DataTemplate>
+                        <TextBlock Text="{Binding CourseName}" VerticalAlignment="Center"/>
+                    </DataTemplate>
+                </local:MidAlertListDataTemplateSelector.UnSubmittedTemplate>
+            </local:MidAlertListDataTemplateSelector>
+        </ResourceDictionary>
     </Page.Resources>
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
-        <Grid Margin="20">
-            <Grid.RowDefinitions>
-                <RowDefinition Height="Auto"/>
-                <RowDefinition Height="*"/>
-            </Grid.RowDefinitions>
-            <TextBlock x:Name="titleTextBlock" FontSize="32" Text="期中預警" Margin="0,0,0,10" Grid.Row="0"/>
-            <ListView Name="listView" SelectionMode="None" IsItemClickEnabled="True" ItemTemplateSelector="{StaticResource MidAlertListDataTEmplateSelector}" Grid.Row="1" ItemClick="listView_ItemClick">
-                <ListView.ItemContainerStyle>
-                    <Style TargetType="ListViewItem">
-                        <Setter Property="Margin" Value="0"/>
-                        <Setter Property="Padding" Value="10"/>
-                    </Style>
-                </ListView.ItemContainerStyle>
-                <ListView.Items>
-                    <ListViewItem>讀取中...</ListViewItem>
-                </ListView.Items>
-            </ListView>
+        <TextBlock x:Name="titleTextBlock" FontSize="32" Text="期中預警" Margin="20" Grid.Row="0"/>
+        <Grid Margin="20,60,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="Auto"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel Orientation="Vertical" MinWidth="350" Grid.Column="1" Margin="20,0,0,0">
+                <TextBlock Name="courseNameTextBlock" FontSize="22" Margin="0,10,0,10" Text="(請選擇)"/>
+                <TextBlock Name="detailTextBlock" FontSize="16"/>
+            </StackPanel>
+            <StackPanel Orientation="Vertical" Grid.Column="0">
+                <TextBlock Grid.Row="1" Margin="10" FontSize="14" Grid.Column="1">
+                    <Run Text="■" Foreground="White"/>
+                    <Run Text="尚未登錄  " />
+                    <Run Text="■" Foreground="#FFD13438"/>
+                    <Run Text="你被預警  " />
+                    <Run Text="■" Foreground="#FF347D38"/>
+                    <Run Text="未被預警" />
+                </TextBlock>
+                <ListView Name="listView" SelectionMode="Single" IsItemClickEnabled="False" MinWidth="400" HorizontalAlignment="Stretch" ItemClick="listView_ItemClick" SelectionChanged="listView_SelectionChanged" ItemTemplateSelector="{StaticResource MidAlertListDataTEmplateSelector}">
+                    <ListView.ItemContainerStyle>
+                        <Style TargetType="ListViewItem">
+                            <Setter Property="Margin" Value="0"/>
+                            <Setter Property="Padding" Value="10"/>
+                            <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                            <Setter Property="Template" Value="{StaticResource MidAlertListViewItemControlTemplate}" />
+                        </Style>
+                    </ListView.ItemContainerStyle>
+                    <ListView.Items>
+                        <ListViewItem>讀取中...</ListViewItem>
+                    </ListView.Items>
+                </ListView>
+            </StackPanel>
+            
         </Grid>
     </Grid>
 </Page>

@@ -7,31 +7,66 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d" Loaded="Page_Loaded">
 
+    <Page.Resources>
+        <ControlTemplate x:Key="MainMenuListViewItemControlTemplate" TargetType="ListViewItem">
+            <ListViewItemPresenter
+				            ContentTransitions="{TemplateBinding ContentTransitions}"
+				            Padding="20,10,10,10"
+				            SelectionCheckMarkVisualEnabled="False"
+				            CheckHintBrush="{ThemeResource ListViewItemCheckHintThemeBrush}"
+				            CheckSelectingBrush="{ThemeResource ListViewItemCheckSelectingThemeBrush}"
+				            CheckBrush="{ThemeResource ListViewItemCheckThemeBrush}"
+				            DragBackground="{ThemeResource ListViewItemDragBackgroundThemeBrush}"
+				            DragForeground="{ThemeResource ListViewItemDragForegroundThemeBrush}"
+				            FocusBorderBrush="{ThemeResource ListViewItemFocusBorderThemeBrush}"
+				            PlaceholderBackground="{ThemeResource ListViewItemPlaceholderBackgroundThemeBrush}"
+				            PointerOverBackground="{ThemeResource ListViewItemPointerOverBackgroundThemeBrush}"
+				            SelectedBorderThickness="0"
+				            SelectedBackground="{ThemeResource ListViewItemPointerOverBackgroundThemeBrush}"
+				            SelectedForeground="{ThemeResource ListViewItemSelectedForegroundThemeBrush}"
+				            SelectedPointerOverBackground="{ThemeResource ListViewItemPointerOverBackgroundThemeBrush}"
+				            SelectedPointerOverBorderBrush="Transparent"
+				            DisabledOpacity="{ThemeResource ListViewItemDisabledThemeOpacity}"
+				            DragOpacity="{ThemeResource ListViewItemDragThemeOpacity}"
+				            ReorderHintOffset="{ThemeResource ListViewItemReorderHintThemeOffset}"
+				            HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+				            VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+				            PointerOverBackgroundMargin="0"
+				            ContentMargin="0"
+                            Margin="0"
+                            FontSize="20"/>
+        </ControlTemplate>
+    </Page.Resources>
+
     <Grid Background="Black">
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="Auto"/>
+            <ColumnDefinition Width="200"/>
             <ColumnDefinition Width="*"/>
         </Grid.ColumnDefinitions>
-        <StackPanel Orientation="Vertical" Background="#333" Grid.Column="0">
-            <StackPanel Orientation="Horizontal" Margin="15">
+        <Grid Background="#333" Grid.Column="0">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto"/>
+                <RowDefinition Height="*"/>
+                <RowDefinition Height="Auto"/>
+            </Grid.RowDefinitions>
+            <StackPanel Orientation="Horizontal" Margin="15" Grid.Row="0">
                 <Image Source="Assets/Logo.png" Height="40" Margin="0,0,10,0"/>
                 <TextBlock Text="北科窗戶" VerticalAlignment="Center" FontSize="26"/>
             </StackPanel>
-            <ListView Width="200"  SelectionMode="None" IsItemClickEnabled="True" ItemClick="ListView_ItemClick">
+            <ListView Name="listView" SelectionMode="Single" IsItemClickEnabled="False" Grid.Row="1" SelectionChanged="ListView_SelectionChanged">
                 <ListView.ItemContainerStyle>
                     <Style TargetType="ListViewItem">
-                        <Setter Property="Padding" Value="15,0,0,0"/>
                         <Setter Property="Margin" Value="0"/>
-                        <Setter Property="VerticalAlignment" Value="Center"/>
-                        <Setter Property="FontSize" Value="20"/>
+                        <Setter Property="Template" Value="{StaticResource MainMenuListViewItemControlTemplate}"/>
                     </Style>
                 </ListView.ItemContainerStyle>
                 <ListViewItem Name="CurriculumListViewItem">查課表</ListViewItem>
                 <ListViewItem Name="ScheduleListViewItem">行事曆</ListViewItem>
-                <ListViewItem>期中預警</ListViewItem>
+                <ListViewItem Name="MidAlertListViewItem">期中預警</ListViewItem>
             </ListView>
-        </StackPanel>
+            <Button Name="logoutButton" Content="登出" Grid.Row="2" HorizontalAlignment="Stretch" BorderThickness="0" Click="logoutButton_Click"/>
+        </Grid>
         <Frame Name="frame" Grid.Column="1"></Frame>
     </Grid>
-    
+
 </Page>

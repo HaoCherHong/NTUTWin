@@ -69,7 +69,7 @@ namespace NTUTWin
             if (e.ClickedItem is MidAlerts.MidAlert)
             {
                 var alertItem = e.ClickedItem as MidAlerts.MidAlert;
-                var message = string.Format("預警:{3}\n\n{0} {1} {2} 學分\n\n{4}",
+                var message = string.Format("預警:{3}\n{0} {1} {2}學分\n{4}",
                     alertItem.CourseNumber,
                     alertItem.Type,
                     alertItem.Credit,
@@ -77,6 +77,26 @@ namespace NTUTWin
                     alertItem.Note);
                 await new MessageDialog(message, alertItem.CourseName).ShowAsync();
             }
+        }
+
+        private void listView_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            if (!(listView.SelectedItem is MidAlerts.MidAlert))
+                return;
+            var alertItem = listView.SelectedItem as MidAlerts.MidAlert;
+            courseNameTextBlock.Text = alertItem.CourseName;
+            var message = string.Format("預警:\t{3}\n課號:\t{0}\n類型:\t{1}\n學分:\t{2}\n\n{4}",
+                alertItem.CourseNumber,
+                alertItem.Type,
+                alertItem.Credit,
+                alertItem.AlertSubmitted ? ((alertItem.Alerted ? "是" : "否") + " (" + alertItem.Ratio.Alerted + "/" + alertItem.Ratio.All + ")") : "尚未送出",
+                alertItem.Note);
+            detailTextBlock.Text = message;
+        }
+
+        private void logoutButton_Click(object sender, RoutedEventArgs e)
+        {
+
         }
     }
 }

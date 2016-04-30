@@ -1,0 +1,60 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:NTUTWin">
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="AppResourceDictionary.xaml"/>
+    </ResourceDictionary.MergedDictionaries>
+    <ControlTemplate x:Key="ScheduleListViewItemControlTemplate" TargetType="ListViewItem">
+        <ListViewItemPresenter
+				ContentTransitions="{TemplateBinding ContentTransitions}"
+				Padding="{TemplateBinding Padding}"
+				SelectionCheckMarkVisualEnabled="False"
+				CheckHintBrush="{ThemeResource ListViewItemCheckHintThemeBrush}"
+				CheckSelectingBrush="{ThemeResource ListViewItemCheckSelectingThemeBrush}"
+				CheckBrush="{ThemeResource ListViewItemCheckThemeBrush}"
+				DragBackground="{ThemeResource ListViewItemDragBackgroundThemeBrush}"
+				DragForeground="{ThemeResource ListViewItemDragForegroundThemeBrush}"
+				FocusBorderBrush="{ThemeResource ListViewItemFocusBorderThemeBrush}"
+				PlaceholderBackground="{ThemeResource ListViewItemPlaceholderBackgroundThemeBrush}"
+				PointerOverBackground="{ThemeResource ListViewItemPointerOverBackgroundThemeBrush}"
+				SelectedBorderThickness="{ThemeResource ListViewItemCompactSelectedBorderThemeThickness}"
+				SelectedBackground="{StaticResource AppCommonRedBrush}"
+				SelectedForeground="{ThemeResource ListViewItemSelectedForegroundThemeBrush}"
+				SelectedPointerOverBackground="{StaticResource AppCommonRedBrush}"
+				SelectedPointerOverBorderBrush="{StaticResource AppCommonRedBrush}"
+				DisabledOpacity="{ThemeResource ListViewItemDisabledThemeOpacity}"
+				DragOpacity="{ThemeResource ListViewItemDragThemeOpacity}"
+				ReorderHintOffset="{ThemeResource ListViewItemReorderHintThemeOffset}"
+				HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+				VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+				PointerOverBackgroundMargin="1"
+				ContentMargin="4" />
+    </ControlTemplate>
+    <ControlTemplate x:Key="MidAlertListViewItemControlTemplate" TargetType="ListViewItem">
+        <ListViewItemPresenter
+				ContentTransitions="{TemplateBinding ContentTransitions}"
+				Padding="{TemplateBinding Padding}"
+				SelectionCheckMarkVisualEnabled="False"
+				CheckHintBrush="{ThemeResource ListViewItemCheckHintThemeBrush}"
+				CheckSelectingBrush="{ThemeResource ListViewItemCheckSelectingThemeBrush}"
+				CheckBrush="{ThemeResource ListViewItemCheckThemeBrush}"
+				DragBackground="{ThemeResource ListViewItemDragBackgroundThemeBrush}"
+				DragForeground="{ThemeResource ListViewItemDragForegroundThemeBrush}"
+				FocusBorderBrush="{ThemeResource ListViewItemFocusBorderThemeBrush}"
+				PlaceholderBackground="{ThemeResource ListViewItemPlaceholderBackgroundThemeBrush}"
+				PointerOverBackground="{ThemeResource ListViewItemPointerOverBackgroundThemeBrush}"
+				SelectedBorderThickness="{ThemeResource ListViewItemCompactSelectedBorderThemeThickness}"
+				SelectedBackground="{ThemeResource ListViewItemPointerOverBackgroundThemeBrush}"
+				SelectedForeground="{ThemeResource ListViewItemSelectedForegroundThemeBrush}"
+				SelectedPointerOverBackground="{ThemeResource ListViewItemPointerOverBackgroundThemeBrush}"
+				SelectedPointerOverBorderBrush="{ThemeResource ListViewItemPointerOverBackgroundThemeBrush}"
+				DisabledOpacity="{ThemeResource ListViewItemDisabledThemeOpacity}"
+				DragOpacity="{ThemeResource ListViewItemDragThemeOpacity}"
+				ReorderHintOffset="{ThemeResource ListViewItemReorderHintThemeOffset}"
+				HorizontalContentAlignment="{TemplateBinding HorizontalContentAlignment}"
+				VerticalContentAlignment="{TemplateBinding VerticalContentAlignment}"
+				PointerOverBackgroundMargin="1"
+				ContentMargin="4" />
+    </ControlTemplate>
+</ResourceDictionary>

@@ -8,6 +8,10 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d" Loaded="Page_Loaded">
 
+    <Page.Resources>
+        <ResourceDictionary Source="ResourceDictionary.xaml"/>
+    </Page.Resources>
+
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}" VerticalAlignment="Stretch">
         <Grid Margin="20">
             <Grid.RowDefinitions>
@@ -35,7 +39,8 @@
                     <ListView.ItemContainerStyle>
                         <Style TargetType="ListViewItem">
                             <Setter Property="Padding" Value="10"/>
-                        </Style>
+                        <Setter Property="Template" Value="{StaticResource ScheduleListViewItemControlTemplate}"/>
+                    </Style>
                     </ListView.ItemContainerStyle>
                     <ListView.Items>
                         <ListViewItem>讀取中...</ListViewItem>

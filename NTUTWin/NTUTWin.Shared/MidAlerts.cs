@@ -13,6 +13,13 @@ namespace NTUTWin
             {
                 public int Alerted { get; set; }
                 public int All { get; set; }
+                public override string ToString()
+                {
+                    if (Alerted == 0 && All == 0)
+                        return string.Empty;
+                    else
+                        return "(" + Alerted + "/" + All + ")";
+                }
             }
 
             public string CourseNumber { get; set; }
@@ -23,16 +30,6 @@ namespace NTUTWin
             public bool Alerted { get; set; }
             public bool AlertSubmitted { get; set; }
             public AlertRatio Ratio { get; set; }
-            public string Display
-            {
-                get
-                {
-                    if (AlertSubmitted)
-                        return string.Format("{0} ({1}/{2})", CourseName, Ratio.Alerted, Ratio.All);
-                    else
-                        return CourseName;
-                }
-            }
         }
         
         public List<MidAlert> Alerts { get; private set; }
