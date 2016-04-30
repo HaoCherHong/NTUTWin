@@ -38,20 +38,31 @@ namespace NTUTWin
             //Send GA View
             App.Current.GATracker.SendView("MainPage");
 
-            frame.Navigate(typeof(CurriculumPage));
+            listView.SelectedItem = CurriculumListViewItem;
         }
 
-        private void ListView_ItemClick(object sender, ItemClickEventArgs e)
+        private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            switch(e.ClickedItem.ToString())
-            {
-                case "查課表":
-                    frame.Navigate(typeof(CurriculumPage));
-                    break;
-                case "行事曆":
-                    frame.Navigate(typeof(SchedulePage));
-                    break;
-            }
+            var item = listView.SelectedItem;
+            if (item == CurriculumListViewItem)
+                frame.Navigate(typeof(CurriculumPage));
+            else if (item == ScheduleListViewItem)
+                frame.Navigate(typeof(SchedulePage));
+            else if (item == MidAlertListViewItem)
+                frame.Navigate(typeof(MidAlertPage));
+        }
+
+        private async void logoutButton_Click(object sender, RoutedEventArgs e)
+        {
+            var result = await NPAPI.LogoutNPortal();
+
+            //Send GA Event
+            App.Current.GATracker.SendEvent("Session", "Logout", null, 0);
+
+            if (result.Success)
+                frame.Navigate(typeof(LoginPage));
+            else
+                await new MessageDialog(result.Message).ShowAsync();
         }
     }
 }

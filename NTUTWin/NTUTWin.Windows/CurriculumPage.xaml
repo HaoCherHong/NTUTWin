@@ -7,7 +7,7 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d" Loaded="Page_Loaded">
 
-    <Grid HorizontalAlignment="Stretch">
+    <Grid HorizontalAlignment="Stretch" Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <Grid.RowDefinitions>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
@@ -16,7 +16,6 @@
             <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Margin="20">
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
                     <TextBlock x:Name="searchResultLabelTextBlock" Text="學期" FontSize="32" Margin="0,0,10,0"/>
-                    <Button Name="logoutButton" Content="登出" Click="logoutButton_Click"/>
                 </StackPanel>
                 <Grid Name="scheduleGrid" Height="Auto" HorizontalAlignment="Stretch" Margin="0, 0, 0, 10">
                     <Grid.ColumnDefinitions>

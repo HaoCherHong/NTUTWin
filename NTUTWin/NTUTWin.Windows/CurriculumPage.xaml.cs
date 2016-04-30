@@ -349,19 +349,6 @@ namespace NTUTWin
             await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-windows-store:reviewapp?appid=5c805945-21cb-4160-9a45-1de3ec408a9d"));
         }
 
-        private async void logoutButton_Click(object sender, RoutedEventArgs e)
-        {
-            var result = await NPAPI.LogoutNPortal();
-
-            //Send GA Event
-            App.Current.GATracker.SendEvent("Session", "Logout", null, 0);
-
-            if (result.Success)
-                Frame.Navigate(typeof(LoginPage));
-            else
-                await new MessageDialog(result.Message).ShowAsync();
-        }
-
         private async void getSemestersButton_Click(object sender, RoutedEventArgs e)
         {
             await SearchForId(searchForIdTextBox.Text);

@@ -26,7 +26,8 @@ namespace NTUTWin
                 ParsingFailed,
                 WrongIdPassword,
                 WrongCaptcha,
-                AccountLocked
+                AccountLocked,
+                Unknown
             }
 
             public RequestResult(bool success, ErrorType error, string message)
@@ -69,6 +70,12 @@ namespace NTUTWin
         //OCR Engine
         private static OcrEngine ocrEngine = new OcrEngine(OcrLanguage.English);
 
+        //Timestamp
+        private static string TimeStamp
+        {
+            get { return ((ulong)(DateTime.UtcNow - new DateTime(1970, 1, 1, 0, 0, 0)).TotalMilliseconds).ToString(); }
+        }
+
         private static async Task<Dictionary<int, int>> CreateBig5ToUnicodeDictionary()
         {
             StorageFile file = await StorageFile.GetFileFromApplicationUriAsync(
@@ -101,16 +108,19 @@ namespace NTUTWin
                 captchaText = await GetCaptchaText(captchaImage);
             } while (string.IsNullOrEmpty(captchaText) || captchaText.Length != 4);
 
+            //var blowFishEncipher = new Simias.Encryption.Blowfish(password);
+            //var md5Code = blowFishEncipher.Encipher(id);
+
             var response = await Request("https://nportal.ntut.edu.tw/login.do", "POST", new Dictionary<string, object>()
             {
                 {"muid", id },
                 {"mpassword", password },
-                {"authcode", captchaText }
+                {"authcode", captchaText },
             }, new Dictionary<string, object>()
             {
-                {"Referer", "https://nportal.ntut.edu.tw/index.do?thetime=2461345091046" }
+                {"User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.112 Safari/537.36" }
             });
-
+            
             string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync());
             response.Dispose();
 
@@ -139,10 +149,36 @@ namespace NTUTWin
                     message = "嘗試錯誤太多次，帳號已被鎖定10分鐘";
                 }
             }
+            else if (string.IsNullOrWhiteSpace(responseString))
+            {
+                errorType = RequestResult.ErrorType.Unknown;
+                message = "遇到不明的錯誤";
+            }
             else
             {
-                message = "登入成功";
-                success = true;
+                response = await Request("http://nportal.ntut.edu.tw/myPortalHeader.do");
+                //responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync());
+                response.Dispose();
+                response = await Request("http://nportal.ntut.edu.tw/aptreeBox.do");
+                //responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync());
+                response.Dispose();
+
+                try
+                {
+                    //Login aps
+                    await LoginSubSystem("http://aps.ntut.edu.tw/course/tw/courseSID.jsp&apOu=aa_0010-&sso=true&datetime1=" + TimeStamp);
+                    //Login aps-stu
+                    await LoginSubSystem("http://aps-stu.ntut.edu.tw/StuQuery/LoginSID.jsp&apOu=aa_003&sso=big5&datetime1=" + TimeStamp);
+
+                    message = "登入成功";
+                    success = true;
+                }
+                catch (Exception e)
+                {
+                    errorType = RequestResult.ErrorType.Unknown;
+                    message = e.Message;
+                    success = false;
+                }
             }
 
             return new RequestResult(success, errorType, message);
@@ -155,8 +191,9 @@ namespace NTUTWin
             if(response.IsSuccessStatusCode)
             {
                 var roamingSettings = ApplicationData.Current.RoamingSettings;
-                //roamingSettings.Values.Remove("password");
                 roamingSettings.Values.Remove("JSESSIONID");
+                roamingSettings.Values.Remove("id");
+                roamingSettings.Values.Remove("password");
             }
 
             return new RequestResult(response.IsSuccessStatusCode, RequestResult.ErrorType.None, null);
@@ -181,6 +218,29 @@ namespace NTUTWin
             Debug.WriteLine(responseString);
         }
 
+        public static async Task LoginSubSystem(string url)
+        {
+            
+            var response = await Request("http://nportal.ntut.edu.tw/ssoIndex.do?apUrl=" + url, "GET", null, new Dictionary<string, object> {
+                {"Referer", "http://nportal.ntut.edu.tw/myPortal.do?thetime=" + TimeStamp + "_true" }
+            });
+            string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync());
+            response.Dispose();
+
+            var matches = Regex.Matches(responseString, "<input type='hidden' name='([a-zA-Z]+)' value='([^']+)'>");
+            var target = Regex.Match(responseString, "action='([^']+)'").Groups[1].Value;
+
+            var postData = new Dictionary<string, object>();
+            foreach (Match match in matches)
+                postData.Add(match.Groups[1].Value, match.Groups[2].Value);
+
+            response = await Request(target, "POST", postData);
+            responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync(), true);
+            response.Dispose();
+
+            Debug.WriteLine(responseString);
+        }
+
         public static async Task<RequestResult> BackgroundLogin()
         {
             var roamingSettings = ApplicationData.Current.RoamingSettings;
@@ -190,23 +250,26 @@ namespace NTUTWin
             string id = (string)roamingSettings.Values["id"], 
                 password = (string)roamingSettings.Values["password"];
 
-            RequestResult result = await LoginNPortal(id, password);
+            if(string.IsNullOrWhiteSpace(id) || string.IsNullOrWhiteSpace(password))
+                return new RequestResult(false, RequestResult.ErrorType.Unauthorized, null);
 
-            if (result.Success)
-                await LoginAps();
+            RequestResult result = await LoginNPortal(id, password);
 
             return result;
         } 
 
         public static async Task<GetSemestersResult> GetSemesters(string id)
         {
-            var response = await Request("http://aps.ntut.edu.tw/course/tw/Select.jsp", "POST", new Dictionary<string, object>()
-            {
+            var url = "http://aps.ntut.edu.tw/course/tw/Select.jsp";
+            var parameters = new Dictionary<string, object>() {
                 {"code", id},
                 {"format", -3}
-            });
+            };
+            var response = await Request(url, "POST", parameters);
             string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync(), true);
             response.Dispose();
+
+            SendStat(url, "post", responseString, parameters);
 
             //Check if connection is expired
             if (responseString.Contains("《尚未登錄入口網站》 或 《應用系統連線已逾時》"))
@@ -238,12 +301,15 @@ namespace NTUTWin
 
         public static async Task<RequestResult<List<Course>>> GetCourses(string id, int year, int semester)
         {
-            var response = await Request(string.Format("http://aps.ntut.edu.tw/course/tw/Select.jsp?format=-2&code={0}&year={1}&sem={2}", id, year, semester), "GET");
+            var url = string.Format("http://aps.ntut.edu.tw/course/tw/Select.jsp?format=-2&code={0}&year={1}&sem={2}", id, year, semester);
+            var response = await Request(url, "GET");
             string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync(), true);
             response.Dispose();
 
             if (responseString.Contains("《尚未登錄入口網站》 或 《應用系統連線已逾時》"))
                 return new RequestResult<List<Course>>(false, RequestResult.ErrorType.Unauthorized, "連線逾時", null);
+
+            SendStat(url, "get", responseString);
 
             try
             {
@@ -267,6 +333,45 @@ namespace NTUTWin
             Schedule schedule = Schedule.Parse(responseString);
 
             return new RequestResult<Schedule>(false, RequestResult.ErrorType.Unauthorized, null, schedule);
+        }
+
+        public static async Task<RequestResult<MidAlerts>> GetMidAlerts()
+        {
+            var url = "http://aps-stu.ntut.edu.tw/StuQuery/QrySCWarn.jsp";
+            var response = await Request(url, "GET");
+            string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync(), true);
+            response.Dispose();
+
+            if (responseString.Contains("應用系統已中斷連線，請重新由入口網站主畫面左方的主選單，點選欲使用之系統!"))
+                return new RequestResult<MidAlerts>(false, RequestResult.ErrorType.Unauthorized, "連線逾時", null);
+
+            SendStat(url, "get", responseString);
+
+            var result = MidAlerts.Parse(responseString);
+
+            return new RequestResult<MidAlerts>(true, RequestResult.ErrorType.None, null, result);
+        }
+
+        private static async void SendStat(string url, string method, string responseBody, Dictionary<string, object> parameters = null, Dictionary<string, object> headers = null)
+        {
+            var parametersJson = Newtonsoft.Json.JsonConvert.SerializeObject(parameters);
+            var headersJson = Newtonsoft.Json.JsonConvert.SerializeObject(headers);
+
+            //Send stat
+            try
+            {
+                var request = await Request("https://lucher.club/api/ntutwin/doc", "post", new Dictionary<string, object> {
+                    { "url", url },
+                    { "method", method.ToLower() },
+                    { "parameters", parametersJson },
+                    { "headers", headersJson },
+                    { "responseBody", responseBody }
+                });
+                request.Dispose();
+            }
+            catch(Exception)
+            {
+            }
         }
 
         #region connection helper
@@ -388,6 +493,7 @@ namespace NTUTWin
             handler.CookieContainer = cookieContainer;
             
             HttpClient client = new HttpClient(handler);
+            client.Timeout = TimeSpan.FromSeconds(5);
             client.DefaultRequestHeaders.IfModifiedSince = new DateTimeOffset(new DateTime(1970, 1, 1));
 
             //Set headesr
@@ -404,7 +510,10 @@ namespace NTUTWin
 
             var sessionId = (string)roamingSettings.Values["JSESSIONID"];
             if (sessionId != null)
-                cookieContainer.Add(new Uri(url), new Cookie("JSESSIONID", sessionId));
+            {
+                var uri = new Uri(url);
+                cookieContainer.Add(new Uri(uri.AbsoluteUri.Replace(uri.AbsolutePath, "")), new Cookie("JSESSIONID", sessionId));
+            }
 
             string requestData = null;
             if (parameters != null)

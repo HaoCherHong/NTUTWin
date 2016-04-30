@@ -1,0 +1,10 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:NTUTWin">
+    <SolidColorBrush x:Key="LogoOrangeBrush" Color="#f1511b"/>
+    <SolidColorBrush x:Key="LogoGreenBrush" Color="#80cc28"/>
+    <SolidColorBrush x:Key="LogoBlueBrush" Color="#00adef"/>
+    <SolidColorBrush x:Key="LogoYellowBrush" Color="#fbbc09"/>
+    <SolidColorBrush x:Key="AppCommonRedBrush" Color="#d13438"/>
+</ResourceDictionary>
