@@ -108,9 +108,6 @@ namespace NTUTWin
                 captchaText = await GetCaptchaText(captchaImage);
             } while (string.IsNullOrEmpty(captchaText) || captchaText.Length != 4);
 
-            //var blowFishEncipher = new Simias.Encryption.Blowfish(password);
-            //var md5Code = blowFishEncipher.Encipher(id);
-
             var response = await Request("https://nportal.ntut.edu.tw/login.do", "POST", new Dictionary<string, object>()
             {
                 {"muid", id },
@@ -493,7 +490,6 @@ namespace NTUTWin
             handler.CookieContainer = cookieContainer;
             
             HttpClient client = new HttpClient(handler);
-            client.Timeout = TimeSpan.FromSeconds(5);
             client.DefaultRequestHeaders.IfModifiedSince = new DateTimeOffset(new DateTime(1970, 1, 1));
 
             //Set headesr

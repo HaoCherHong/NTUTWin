@@ -41,9 +41,6 @@ namespace NTUTWin
 
         private async Task GetSchedule(Semester semester)
         {
-            //Send GA Event
-            App.Current.GATracker.SendEvent("Search", "Get Schedule", semester.ToString(), 0);
-
             var coursesRequest = await NPAPI.GetCourses(searchForIdTextBox.Text, semester.Year, semester.SemesterNumber);
 
             if (coursesRequest.Success)
@@ -62,6 +59,10 @@ namespace NTUTWin
                 var semesterJson = JsonConvert.SerializeObject(semester);
                 PutRoamingSetting("courses", coursesJson.ToString());
                 PutRoamingSetting("semester", semesterJson.ToString());
+
+                //Send GA Event
+                bool searchSelf = roamingSettings.Values.ContainsKey("id") && roamingSettings.Values["id"] as string == searchForIdTextBox.Text;
+                App.Current.GATracker.SendEvent("Get Curriculum", semester.ToString(), searchForIdTextBox.Text, searchSelf ? 0 : 1);
             }
             else
             {
@@ -219,9 +220,6 @@ namespace NTUTWin
 
         private async Task SearchForId(string id)
         {
-            //Send GA Event
-            App.Current.GATracker.SendEvent("Search", "Get Semesters", id, 0);
-
             var semestersRequest = await NPAPI.GetSemesters(id);
             bool saveSearchId = true;
             if (semestersRequest.Success)
@@ -240,6 +238,10 @@ namespace NTUTWin
                 PutRoamingSetting("name", name);
                 var semestersJson = JsonConvert.SerializeObject(semestersRequest.Semesters);
                 PutRoamingSetting("semesters", semestersJson.ToString());
+
+                //Send GA Event
+                bool searchSelf = roamingSettings.Values.ContainsKey("id") && roamingSettings.Values["id"] as string == id;
+                App.Current.GATracker.SendEvent("Get Semesters", null, id, searchSelf ? 0 : 1);
             }
             else
             {
@@ -290,7 +292,7 @@ namespace NTUTWin
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
             //Send GA View
-            App.Current.GATracker.SendView("MainPage");
+            App.Current.GATracker.SendView("CurriculumPage");
 
             if (roamingSettings.Values.ContainsKey("searchId"))
                 searchForIdTextBox.Text = roamingSettings.Values["searchId"].ToString();
@@ -355,6 +357,9 @@ namespace NTUTWin
         private async void rateAndReviewAppBarButton_Click(object sender, RoutedEventArgs e)
         {
             await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-windows-store:reviewapp?appid=5c805945-21cb-4160-9a45-1de3ec408a9d"));
+
+            //Send GA Event
+            App.Current.GATracker.SendEvent("Other", "Go Rating Page", null, 0);
         }
 
         private async void logoutAppBarButton_Click(object sender, RoutedEventArgs e)
