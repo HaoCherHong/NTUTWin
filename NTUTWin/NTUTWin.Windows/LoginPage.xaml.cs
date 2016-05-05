@@ -22,10 +22,10 @@ namespace NTUTWin
 
         private async void Login()
         {
-            //Send GA Event
-            App.Current.GATracker.SendEvent("Session", "Attempt Login", null, 0);
-
             string id = idTextBox.Text, password = passwordTextBox.Password;
+
+            //Send GA Event
+            App.Current.GATracker.SendEvent("Session", "Attempt Login", id, 0);
 
             passwordTextBox.IsEnabled = loginAppBarButton.IsEnabled = false;
             idTextBox.IsReadOnly = true;

@@ -33,6 +33,9 @@ namespace NTUTWin
             //Send GA View
             App.Current.GATracker.SendView("SchedulePage");
 
+            //Send GA Event
+            App.Current.GATracker.SendEvent("Schedule", "Get Schedule", null, 0);
+
             schedule = (await NPAPI.GetSchedule()).Data;
             calendar.DisplayDateStart = new DateTime(2016, 1, 1);
             calendar.DisplayDateEnd = new DateTime(2016, 12, 31);

@@ -7,6 +7,7 @@ using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.Storage;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -45,11 +46,19 @@ namespace NTUTWin
             {
                 titleTextBlock.Text = request.Data.Semester + " 期中預警";
                 listView.ItemsSource = request.Data.Alerts;
+
+                //Send GA Event
+                string id = ApplicationData.Current.RoamingSettings.Values.ContainsKey("id") ? ApplicationData.Current.RoamingSettings.Values["id"] as string : "N/A";
+                App.Current.GATracker.SendEvent("Mid Alert", "Get Mid Alert", id, 0);
+
             }
             else
             {
                 if (request.Error == NPAPI.RequestResult.ErrorType.Unauthorized)
                 {
+                    //Send GA Event
+                    App.Current.GATracker.SendEvent("Session", "Session Expired", null, 0);
+
                     //Try background login
                     var result = await NPAPI.BackgroundLogin();
                     if (result.Success)

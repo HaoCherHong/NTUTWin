@@ -47,8 +47,6 @@ namespace NTUTWin
 
         private async Task GetSchedule(Semester semester)
         {
-            //Send GA Event
-            App.Current.GATracker.SendEvent("Search", "Get Schedule", semester.ToString(), 0);
 
             var coursesRequest = await NPAPI.GetCourses(searchForIdTextBox.Text, semester.Year, semester.SemesterNumber);
 
@@ -68,6 +66,10 @@ namespace NTUTWin
                 var semesterJson = JsonConvert.SerializeObject(semester);
                 PutRoamingSetting("courses", coursesJson.ToString());
                 PutRoamingSetting("semester", semesterJson.ToString());
+
+                //Send GA Event
+                bool searchSelf = roamingSettings.Values.ContainsKey("id") && roamingSettings.Values["id"] as string == searchForIdTextBox.Text;
+                App.Current.GATracker.SendEvent("Get Curriculum", semester.ToString(), searchForIdTextBox.Text, searchSelf ? 0 : 1);
             }
             else
             {
@@ -180,8 +182,6 @@ namespace NTUTWin
             border.Child = textBlock;
             border.Tapped += async (object sender, Windows.UI.Xaml.Input.TappedRoutedEventArgs e) =>
             {
-                //Send GA Event
-                App.Current.GATracker.SendEvent("Other", "Tap on Course", null, 0);
 
                 string content = "";
 
@@ -208,6 +208,9 @@ namespace NTUTWin
                     content += course.Note;
 
                 await new MessageDialog(content, course.Name).ShowAsync();
+
+                //Send GA Event
+                App.Current.GATracker.SendEvent("Other", "Tap on Course", null, 0);
             };
 
             Brush backColor;
@@ -225,9 +228,6 @@ namespace NTUTWin
 
         private async Task SearchForId(string id)
         {
-            //Send GA Event
-            App.Current.GATracker.SendEvent("Search", "Get Semesters", id, 0);
-
             searchForIdTextBox.IsReadOnly = true;
 
             var semestersRequest = await NPAPI.GetSemesters(id);
@@ -248,11 +248,18 @@ namespace NTUTWin
                 PutRoamingSetting("name", name);
                 var semestersJson = JsonConvert.SerializeObject(semestersRequest.Semesters);
                 PutRoamingSetting("semesters", semestersJson.ToString());
+
+                //Send GA Event
+                bool searchSelf = roamingSettings.Values.ContainsKey("id") && roamingSettings.Values["id"] as string == id;
+                App.Current.GATracker.SendEvent("Get Semesters", null, id, searchSelf ? 0 : 1);
             }
             else
             {
                 if (semestersRequest.Error == NPAPI.RequestResult.ErrorType.Unauthorized)
                 {
+                    //Send GA Event
+                    App.Current.GATracker.SendEvent("Session", "Session Expired", null, 0);
+
                     //Try background login
                     var result = await NPAPI.BackgroundLogin();
                     if (result.Success)
@@ -337,16 +344,6 @@ namespace NTUTWin
             {
                 await SearchForId(searchForIdTextBox.Text);
             }
-        }
-
-        private void aboutAppBarButton_Click(object sender, RoutedEventArgs e)
-        {
-            //Frame.Navigate(typeof(AboutPage));
-        }
-
-        private async void rateAndReviewAppBarButton_Click(object sender, RoutedEventArgs e)
-        {
-            await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-windows-store:reviewapp?appid=5c805945-21cb-4160-9a45-1de3ec408a9d"));
         }
 
         private async void getSemestersButton_Click(object sender, RoutedEventArgs e)
