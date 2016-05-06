@@ -41,9 +41,11 @@ namespace NTUTWin
 
         private async Task GetMidAlert()
         {
+            courseNameTextBlock.Text = "";
             var request = await NPAPI.GetMidAlerts();
             if(request.Success)
             {
+                courseNameTextBlock.Text = "(請選擇)";
                 titleTextBlock.Text = request.Data.Semester + " 期中預警";
                 listView.ItemsSource = request.Data.Alerts;
 
@@ -68,7 +70,9 @@ namespace NTUTWin
                 }
                 else
                 {
-                    await new MessageDialog(request.Message).ShowAsync();
+                    listView.Items.Clear();
+                    listView.Items.Add("讀取失敗，請稍後再試。");
+                    listView.Items.Add(request.Message);
                 }
             }
         }

@@ -27,6 +27,7 @@ namespace NTUTWin
                 WrongIdPassword,
                 WrongCaptcha,
                 AccountLocked,
+                HttpError,
                 Unknown
             }
 
@@ -62,6 +63,15 @@ namespace NTUTWin
 
             public List<Semester> Semesters { get; private set; }
             public string Name { get; private set; }
+        }
+
+        public class LoginExcpetion : Exception
+        {
+            public RequestResult.ErrorType ErrorType { get; private set; }
+            public LoginExcpetion(string message, RequestResult.ErrorType errorType):base(message)
+            {
+                this.ErrorType = errorType;
+            }
         }
 
         // Big5 to Unicode mapping table
@@ -101,58 +111,42 @@ namespace NTUTWin
 
         public static async Task<RequestResult> LoginNPortal(string id, string password)
         {
-            string captchaText;
-            do
+            try
             {
-                var captchaImage = await GetCaptchaImage();
-                captchaText = await GetCaptchaText(captchaImage);
-            } while (string.IsNullOrEmpty(captchaText) || captchaText.Length != 4);
-
-            var response = await Request("https://nportal.ntut.edu.tw/login.do", "POST", new Dictionary<string, object>()
-            {
-                {"muid", id },
-                {"mpassword", password },
-                {"authcode", captchaText },
-            }, new Dictionary<string, object>()
-            {
-                {"User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.112 Safari/537.36" }
-            });
-            
-            string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync());
-            response.Dispose();
-
-            bool success = false;
-            string message = null;
-            RequestResult.ErrorType errorType = RequestResult.ErrorType.None;
-
-            if (responseString.Contains("登入失敗"))
-            {
-                if (responseString.Contains("密碼錯誤"))
+                string captchaText;
+                do
                 {
-                    errorType = RequestResult.ErrorType.WrongIdPassword;
-                    message = "帳號密碼錯誤";
-                }
-                else if (responseString.Contains("驗證碼"))
-                {
-                    errorType = RequestResult.ErrorType.WrongCaptcha;
-                    message = "驗證碼錯誤";
+                    var captchaImage = await GetCaptchaImage();
+                    captchaText = await GetCaptchaText(captchaImage);
+                } while (string.IsNullOrEmpty(captchaText) || captchaText.Length != 4);
 
-                    //Retry
-                    return await LoginNPortal(id, password);
-                }
-                else if (responseString.Contains("帳號已被鎖住"))
+                var response = await Request("https://nportal.ntut.edu.tw/login.do", "POST", new Dictionary<string, object>()
                 {
-                    errorType = RequestResult.ErrorType.AccountLocked;
-                    message = "嘗試錯誤太多次，帳號已被鎖定10分鐘";
+                    {"muid", id },
+                    {"mpassword", password },
+                    {"authcode", captchaText },
+                }, new Dictionary<string, object>()
+                {
+                    {"User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.112 Safari/537.36" }
+                });
+                string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync());
+                response.Dispose();
+
+                if (responseString.Contains("登入失敗"))
+                {
+                    if (responseString.Contains("密碼錯誤"))
+                        throw new LoginExcpetion("帳號密碼錯誤", RequestResult.ErrorType.WrongIdPassword);
+                    else if (responseString.Contains("驗證碼"))
+                        return await LoginNPortal(id, password); //Retry
+                    else if (responseString.Contains("帳號已被鎖住"))
+                        throw new LoginExcpetion("嘗試錯誤太多次，帳號已被鎖定10分鐘", RequestResult.ErrorType.AccountLocked);
                 }
-            }
-            else if (string.IsNullOrWhiteSpace(responseString))
-            {
-                errorType = RequestResult.ErrorType.Unknown;
-                message = "遇到不明的錯誤";
-            }
-            else
-            {
+                else if (string.IsNullOrWhiteSpace(responseString))
+                    throw new LoginExcpetion("遇到不明的錯誤", RequestResult.ErrorType.Unknown);
+                
+
+                //The folling 2 request will make the server allowing us to login sub-systems
+
                 response = await Request("http://nportal.ntut.edu.tw/myPortalHeader.do");
                 //responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync());
                 response.Dispose();
@@ -160,40 +154,51 @@ namespace NTUTWin
                 //responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync());
                 response.Dispose();
 
-                try
-                {
-                    //Login aps
-                    await LoginSubSystem("http://aps.ntut.edu.tw/course/tw/courseSID.jsp&apOu=aa_0010-&sso=true&datetime1=" + TimeStamp);
-                    //Login aps-stu
-                    await LoginSubSystem("http://aps-stu.ntut.edu.tw/StuQuery/LoginSID.jsp&apOu=aa_003&sso=big5&datetime1=" + TimeStamp);
+                //Login aps
+                await LoginSubSystem("http://aps.ntut.edu.tw/course/tw/courseSID.jsp&apOu=aa_0010-&sso=true&datetime1=" + TimeStamp);
+                //Login aps-stu
+                await LoginSubSystem("http://aps-stu.ntut.edu.tw/StuQuery/LoginSID.jsp&apOu=aa_003&sso=big5&datetime1=" + TimeStamp);
 
-                    message = "登入成功";
-                    success = true;
-                }
-                catch (Exception e)
-                {
-                    errorType = RequestResult.ErrorType.Unknown;
-                    message = e.Message;
-                    success = false;
-                }
+                return new RequestResult(true, RequestResult.ErrorType.None, "登入成功");
             }
-
-            return new RequestResult(success, errorType, message);
+            catch (LoginExcpetion e)
+            {
+                return new RequestResult(false, e.ErrorType, e.Message);
+            }
+            catch (HttpRequestException e)
+            {
+                return new RequestResult(false, RequestResult.ErrorType.HttpError, e.Message);
+            }
+            catch (Exception e)
+            {
+                return new RequestResult(false, RequestResult.ErrorType.Unknown, e.Message);
+            }
         }
 
         public static async Task<RequestResult> LogoutNPortal()
         {
-            var response = await Request("https://nportal.ntut.edu.tw/logout.do", "GET");
-
-            if(response.IsSuccessStatusCode)
+            try
             {
-                var roamingSettings = ApplicationData.Current.RoamingSettings;
-                roamingSettings.Values.Remove("JSESSIONID");
-                roamingSettings.Values.Remove("id");
-                roamingSettings.Values.Remove("password");
-            }
+                var response = await Request("https://nportal.ntut.edu.tw/logout.do", "GET");
 
-            return new RequestResult(response.IsSuccessStatusCode, RequestResult.ErrorType.None, null);
+                if (response.IsSuccessStatusCode)
+                {
+                    var roamingSettings = ApplicationData.Current.RoamingSettings;
+                    roamingSettings.Values.Remove("JSESSIONID");
+                    roamingSettings.Values.Remove("id");
+                    roamingSettings.Values.Remove("password");
+                }
+
+                return new RequestResult(response.IsSuccessStatusCode, RequestResult.ErrorType.None, null);
+            }
+            catch (HttpRequestException e)
+            {
+                return new RequestResult(false, RequestResult.ErrorType.HttpError, e.Message);
+            }
+            catch (Exception e)
+            {
+                return new RequestResult(false, RequestResult.ErrorType.Unknown, e.Message);
+            }
         }
 
         public static async Task LoginAps()
@@ -257,96 +262,132 @@ namespace NTUTWin
 
         public static async Task<GetSemestersResult> GetSemesters(string id)
         {
-            var url = "http://aps.ntut.edu.tw/course/tw/Select.jsp";
-            var parameters = new Dictionary<string, object>() {
+            try
+            {
+                var url = "http://aps.ntut.edu.tw/course/tw/Select.jsp";
+                var parameters = new Dictionary<string, object>() {
                 {"code", id},
                 {"format", -3}
             };
-            var response = await Request(url, "POST", parameters);
-            string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync(), true);
-            response.Dispose();
+                var response = await Request(url, "POST", parameters);
+                string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync(), true);
+                response.Dispose();
 
-            SendStat(url, "post", responseString, parameters);
+                SendStat(url, "post", responseString, parameters);
 
-            //Check if connection is expired
-            if (responseString.Contains("《尚未登錄入口網站》 或 《應用系統連線已逾時》"))
-                return new GetSemestersResult(false, RequestResult.ErrorType.Unauthorized, "連線逾時", null, null);
+                //Check if connection is expired
+                if (responseString.Contains("《尚未登錄入口網站》 或 《應用系統連線已逾時》"))
+                    return new GetSemestersResult(false, RequestResult.ErrorType.Unauthorized, "連線逾時", null, null);
 
-            //Get semesters
-            var matches = Regex.Matches(responseString, "<a href=\"Select.jsp\\?format=-2&code=" + id + "&year=([0-9]+)&sem=([0-9]+)\">([^<]+)</a>");
+                //Get semesters
+                var matches = Regex.Matches(responseString, "<a href=\"Select.jsp\\?format=-2&code=" + id + "&year=([0-9]+)&sem=([0-9]+)\">([^<]+)</a>");
 
-            var semesters = new List<Semester>();
-            foreach (Match match in matches)
-                semesters.Add(new Semester(int.Parse(match.Groups[1].Value), int.Parse(match.Groups[2].Value)));
+                var semesters = new List<Semester>();
+                foreach (Match match in matches)
+                    semesters.Add(new Semester(int.Parse(match.Groups[1].Value), int.Parse(match.Groups[2].Value)));
 
-            //Get student name
-            var nameMatch = Regex.Match(responseString, "<tr><th>([^(]+)");
-            string name = nameMatch.Success ? nameMatch.Groups[1].Value.Trim() : null;
+                //Get student name
+                var nameMatch = Regex.Match(responseString, "<tr><th>([^(]+)");
+                string name = nameMatch.Success ? nameMatch.Groups[1].Value.Trim() : null;
 
 
-            if (matches.Count == 0)
-            {
-                var match = Regex.Match(responseString, "<font color=\"#FF0000\">([^<]+)</font>");
-                if(match.Success)
-                    return new GetSemestersResult(false, RequestResult.ErrorType.None, match.Groups[1].Value, null, null);
-                else
-                    return new GetSemestersResult(false, RequestResult.ErrorType.ParsingFailed, "查詢失敗", null, null);
+                if (matches.Count == 0)
+                {
+                    var match = Regex.Match(responseString, "<font color=\"#FF0000\">([^<]+)</font>");
+                    if (match.Success)
+                        return new GetSemestersResult(false, RequestResult.ErrorType.None, match.Groups[1].Value, null, null);
+                    else
+                        return new GetSemestersResult(false, RequestResult.ErrorType.ParsingFailed, "查詢失敗", null, null);
+                }
+
+                return new GetSemestersResult(true, RequestResult.ErrorType.None, null, semesters, name);
             }
-
-            return new GetSemestersResult(true, RequestResult.ErrorType.None, null, semesters, name);
+            catch (HttpRequestException e)
+            {
+                return new GetSemestersResult(false, RequestResult.ErrorType.HttpError, e.Message, null, null);
+            }
+            catch (Exception e)
+            {
+                return new GetSemestersResult(false, RequestResult.ErrorType.Unknown, e.Message, null, null);
+            }
         }
 
         public static async Task<RequestResult<List<Course>>> GetCourses(string id, int year, int semester)
         {
-            var url = string.Format("http://aps.ntut.edu.tw/course/tw/Select.jsp?format=-2&code={0}&year={1}&sem={2}", id, year, semester);
-            var response = await Request(url, "GET");
-            string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync(), true);
-            response.Dispose();
-
-            if (responseString.Contains("《尚未登錄入口網站》 或 《應用系統連線已逾時》"))
-                return new RequestResult<List<Course>>(false, RequestResult.ErrorType.Unauthorized, "連線逾時", null);
-
-            SendStat(url, "get", responseString);
-
             try
             {
+                var url = string.Format("http://aps.ntut.edu.tw/course/tw/Select.jsp?format=-2&code={0}&year={1}&sem={2}", id, year, semester);
+                var response = await Request(url, "GET");
+                string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync(), true);
+                response.Dispose();
+
+                if (responseString.Contains("《尚未登錄入口網站》 或 《應用系統連線已逾時》"))
+                    return new RequestResult<List<Course>>(false, RequestResult.ErrorType.Unauthorized, "連線逾時", null);
+
+                SendStat(url, "get", responseString);
+            
                 var courses = Course.ParseFromDocument(responseString);
                 return new RequestResult<List<Course>>(true, RequestResult.ErrorType.None, null, courses);
             }
+            catch (HttpRequestException e)
+            {
+                return new RequestResult<List<Course>>(false, RequestResult.ErrorType.HttpError, e.Message, null);
+            }
             catch (Exception e)
             {
-                Debug.WriteLine(e);
-                Debugger.Break();
-                return new RequestResult<List<Course>>(true, RequestResult.ErrorType.None, e.Message, null);
+                return new RequestResult<List<Course>>(false, RequestResult.ErrorType.Unknown, e.Message, null);
             }
         }
 
         public static async Task<RequestResult<Schedule>> GetSchedule()
         {
-            var response = await Request("http://www.cc.ntut.edu.tw/~wwwoaa/oaa-nwww/oaa-cal/oaa-cal_099.html", "GET");
-            string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync(), false);
-            response.Dispose();
+            try
+            {
+                var response = await Request("http://www.cc.ntut.edu.tw/~wwwoaa/oaa-nwww/oaa-cal/oaa-cal_099.html", "GET");
+                string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync(), false);
+                response.Dispose();
 
-            Schedule schedule = Schedule.Parse(responseString);
+                Schedule schedule = Schedule.Parse(responseString);
 
-            return new RequestResult<Schedule>(false, RequestResult.ErrorType.Unauthorized, null, schedule);
+                return new RequestResult<Schedule>(false, RequestResult.ErrorType.Unauthorized, null, schedule);
+            }
+            catch (HttpRequestException e)
+            {
+                return new RequestResult<Schedule>(false, RequestResult.ErrorType.HttpError, e.Message, null);
+            }
+            catch (Exception e)
+            {
+                return new RequestResult<Schedule>(false, RequestResult.ErrorType.Unknown, e.Message, null);
+            }
         }
 
         public static async Task<RequestResult<MidAlerts>> GetMidAlerts()
         {
-            var url = "http://aps-stu.ntut.edu.tw/StuQuery/QrySCWarn.jsp";
-            var response = await Request(url, "GET");
-            string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync(), true);
-            response.Dispose();
+            try
+            {
+                var url = "http://aps-stu.ntut.edu.tw/StuQuery/QrySCWarn.jsp";
+                var response = await Request(url, "GET");
+                string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync(), true);
+                response.Dispose();
 
-            if (responseString.Contains("應用系統已中斷連線，請重新由入口網站主畫面左方的主選單，點選欲使用之系統!"))
-                return new RequestResult<MidAlerts>(false, RequestResult.ErrorType.Unauthorized, "連線逾時", null);
+                if (responseString.Contains("應用系統已中斷連線，請重新由入口網站主畫面左方的主選單，點選欲使用之系統!"))
+                    return new RequestResult<MidAlerts>(false, RequestResult.ErrorType.Unauthorized, "連線逾時", null);
 
-            SendStat(url, "get", responseString);
+                SendStat(url, "get", responseString);
 
-            var result = MidAlerts.Parse(responseString);
+                var result = MidAlerts.Parse(responseString);
 
-            return new RequestResult<MidAlerts>(true, RequestResult.ErrorType.None, null, result);
+                return new RequestResult<MidAlerts>(true, RequestResult.ErrorType.None, null, result);
+            }
+            catch(HttpRequestException e)
+            {
+                return new RequestResult<MidAlerts>(false, RequestResult.ErrorType.HttpError, e.Message, null);
+            }
+            catch (Exception e)
+            {
+                return new RequestResult<MidAlerts>(false, RequestResult.ErrorType.Unknown, e.Message, null);
+            }
+            
         }
 
         private static async void SendStat(string url, string method, string responseBody, Dictionary<string, object> parameters = null, Dictionary<string, object> headers = null)
@@ -493,7 +534,7 @@ namespace NTUTWin
             client.DefaultRequestHeaders.IfModifiedSince = new DateTimeOffset(new DateTime(1970, 1, 1));
 
             //Set headesr
-            if(headers != null)
+            if (headers != null)
             {
                 foreach(string key in headers.Keys)
                 {

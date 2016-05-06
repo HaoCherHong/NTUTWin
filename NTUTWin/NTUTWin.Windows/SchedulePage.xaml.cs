@@ -5,6 +5,7 @@ using System.Linq;
 using System.Runtime.InteropServices.WindowsRuntime;
 using Windows.Foundation;
 using Windows.Foundation.Collections;
+using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 using Windows.UI.Xaml.Controls.Primitives;
@@ -36,16 +37,32 @@ namespace NTUTWin
             //Send GA Event
             App.Current.GATracker.SendEvent("Schedule", "Get Schedule", null, 0);
 
-            schedule = (await NPAPI.GetSchedule()).Data;
-            calendar.DisplayDateStart = new DateTime(2016, 1, 1);
-            calendar.DisplayDateEnd = new DateTime(2016, 12, 31);
-            calendar.SelectionMode = WinRTXamlToolkit.Controls.CalendarSelectionMode.SingleDate;
-            listView.ItemsSource = schedule.monthSchedules[calendar.DisplayDate.Month];
+            GetSchedule();
+        }
+
+        private async void GetSchedule()
+        {
+            var result = await NPAPI.GetSchedule();
+            if(result.Success)
+            {
+                schedule = result.Data;
+                calendar.DisplayDateStart = new DateTime(2016, 1, 1);
+                calendar.DisplayDateEnd = new DateTime(2016, 12, 31);
+                calendar.SelectionMode = WinRTXamlToolkit.Controls.CalendarSelectionMode.SingleDate;
+                listView.ItemsSource = schedule.monthSchedules[calendar.DisplayDate.Month];
+            }
+            else
+            {
+                listView.Items.Clear();
+                listView.Items.Add("讀取失敗，請稍後再試。");
+                listView.Items.Add(result.Message);
+            }
         }
 
         private void calendar_DisplayDateChanged(object sender, WinRTXamlToolkit.Controls.CalendarDateChangedEventArgs e)
         {
-            listView.ItemsSource = schedule.monthSchedules[calendar.DisplayDate.Month];
+            if(schedule != null)
+                listView.ItemsSource = schedule.monthSchedules[calendar.DisplayDate.Month];
         }
 
         private void calendar_SelectedDatesChanged(object sender, SelectionChangedEventArgs e)

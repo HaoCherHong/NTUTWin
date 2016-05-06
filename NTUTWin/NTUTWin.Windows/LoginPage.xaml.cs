@@ -27,8 +27,10 @@ namespace NTUTWin
             //Send GA Event
             App.Current.GATracker.SendEvent("Session", "Attempt Login", id, 0);
 
-            passwordTextBox.IsEnabled = loginAppBarButton.IsEnabled = false;
-            idTextBox.IsReadOnly = true;
+            //Disable user input
+            passwordTextBox.IsEnabled = loginButton.IsEnabled = idTextBox.IsEnabled = false;
+
+            errorTextBlock.Visibility = Visibility.Collapsed;
 
             //await progressbar.ShowAsync();
 
@@ -57,11 +59,12 @@ namespace NTUTWin
             }
             else
             {
-                await new MessageDialog(loginResult.Message).ShowAsync();
+                errorTextBlock.Text = loginResult.Message;
+                errorTextBlock.Visibility = Visibility.Visible;
             }
 
-            passwordTextBox.IsEnabled = loginAppBarButton.IsEnabled = true;
-            idTextBox.IsReadOnly = false;
+            //Enable user input
+            passwordTextBox.IsEnabled = loginButton.IsEnabled = idTextBox.IsEnabled = true;
         }
 
         
@@ -70,14 +73,11 @@ namespace NTUTWin
             //Send GA View
             App.Current.GATracker.SendView("LoginPage");
 
+            errorTextBlock.Visibility = Visibility.Collapsed;
+
             var roamingSettings = Windows.Storage.ApplicationData.Current.RoamingSettings;
             idTextBox.Text = roamingSettings.Values.ContainsKey("id") ? (string)roamingSettings.Values["id"] : "";
             passwordTextBox.Password = roamingSettings.Values.ContainsKey("password") ? (string)roamingSettings.Values["password"] : "";
-        }
-
-        private void loginAppBarButton_Click(object sender, RoutedEventArgs e)
-        {
-            Login();
         }
 
         private void inputs_KeyUp(object sender, Windows.UI.Xaml.Input.KeyRoutedEventArgs e)
@@ -89,6 +89,11 @@ namespace NTUTWin
                 else if (sender == passwordTextBox)
                     Login();
             }
+        }
+
+        private void loginButton_Click(object sender, RoutedEventArgs e)
+        {
+            Login();
         }
     }
 }

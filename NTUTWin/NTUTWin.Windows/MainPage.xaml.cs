@@ -54,6 +54,7 @@ namespace NTUTWin
 
         private async void logoutButton_Click(object sender, RoutedEventArgs e)
         {
+            logoutButton.IsEnabled = false;
             var result = await NPAPI.LogoutNPortal();
 
             if (result.Success)
@@ -65,7 +66,9 @@ namespace NTUTWin
                 App.Current.GATracker.SendEvent("Session", "Logout", id, 0);
             }
             else
-                await new MessageDialog(result.Message).ShowAsync();
+                await new MessageDialog(result.Message, "錯誤").ShowAsync();
+
+            logoutButton.IsEnabled = true;
         }
 
         private async void rateAndReviewButton_Click(object sender, RoutedEventArgs e)

@@ -47,7 +47,6 @@ namespace NTUTWin
 
         private async Task GetSchedule(Semester semester)
         {
-
             var coursesRequest = await NPAPI.GetCourses(searchForIdTextBox.Text, semester.Year, semester.SemesterNumber);
 
             if (coursesRequest.Success)
@@ -86,7 +85,7 @@ namespace NTUTWin
                         Frame.Navigate(typeof(LoginPage));
                 }
                 else
-                    await new MessageDialog(coursesRequest.Message).ShowAsync();
+                    await new MessageDialog(coursesRequest.Message, "錯誤").ShowAsync();
             }
         }
 
@@ -228,7 +227,8 @@ namespace NTUTWin
 
         private async Task SearchForId(string id)
         {
-            searchForIdTextBox.IsReadOnly = true;
+            //Disable user input
+            searchForIdTextBox.IsEnabled = semesterComboBox.IsEnabled = getSemestersButton.IsEnabled = false;
 
             var semestersRequest = await NPAPI.GetSemesters(id);
             bool saveSearchId = true;
@@ -269,7 +269,7 @@ namespace NTUTWin
                 }
                 else
                 {
-                    await new MessageDialog(semestersRequest.Message).ShowAsync();
+                    await new MessageDialog(semestersRequest.Message, "錯誤").ShowAsync();
                     saveSearchId = false;
                 }
 
@@ -278,7 +278,9 @@ namespace NTUTWin
             if (saveSearchId)
                 PutRoamingSetting("searchId", id);
 
-            searchForIdTextBox.IsReadOnly = false;
+            //Enableuser input
+            searchForIdTextBox.IsEnabled = semesterComboBox.IsEnabled = getSemestersButton.IsEnabled = true;
+
             semesterComboBox.Focus(FocusState.Programmatic);
         }
 
@@ -296,9 +298,11 @@ namespace NTUTWin
             searchResultLabelTextBlock.Text = name;
             if (semesterComboBox.SelectedItem is Semester)
             {
-                //await progressbar.ShowAsync();
+                //Disable user input
+                searchForIdTextBox.IsEnabled = semesterComboBox.IsEnabled = getSemestersButton.IsEnabled = false;
                 await GetSchedule(semesterComboBox.SelectedItem as Semester);
-                //await progressbar.HideAsync();
+                //Enable user input
+                searchForIdTextBox.IsEnabled = semesterComboBox.IsEnabled = getSemestersButton.IsEnabled = true;
             }
         }
 

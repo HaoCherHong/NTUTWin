@@ -42,7 +42,7 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <StackPanel Orientation="Vertical" MinWidth="350" Grid.Column="1" Margin="20,0,0,0">
-                <TextBlock Name="courseNameTextBlock" FontSize="22" Margin="0,10,0,10" Text="(請選擇)"/>
+                <TextBlock Name="courseNameTextBlock" FontSize="22" Margin="0,40,0,10" Text="(請選擇)"/>
                 <TextBlock Name="detailTextBlock" FontSize="16"/>
             </StackPanel>
             <StackPanel Orientation="Vertical" Grid.Column="0">

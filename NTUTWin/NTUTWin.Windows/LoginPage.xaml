@@ -8,18 +8,13 @@
     mc:Ignorable="d"
     Loaded="Page_Loaded" >
 
-    <Page.BottomAppBar>
-        <CommandBar>
-            <AppBarButton Name="loginAppBarButton" Content="登入" Click="loginAppBarButton_Click" Icon="Forward"/>
-        </CommandBar>
-    </Page.BottomAppBar>
-
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <StackPanel Orientation="Vertical" Margin="25" MaxWidth="1024" HorizontalAlignment="Left">
             <TextBlock Text="登入校園入口網站" FontSize="32" Margin="0,0,0,5"/>
-            <TextBox Name="idTextBox" PlaceholderText="使用者帳號" KeyUp="inputs_KeyUp" Margin="10,5"/>
-            <PasswordBox Name="passwordTextBox" PlaceholderText="密碼" Margin="10,5" KeyUp="inputs_KeyUp" FontFamily="Global User Interface"/>
-            <Button Name="loginButton" Content="登入" Click="loginAppBarButton_Click" HorizontalAlignment="Stretch" Margin="0,5,0,0"/>
+            <TextBlock Name="errorTextBlock" Foreground="#FFD13438" FontSize="16" Text="Error Message" />
+            <TextBox Name="idTextBox" PlaceholderText="使用者帳號" KeyUp="inputs_KeyUp" Margin="5" FontFamily="Global User Interface" Width="250" HorizontalAlignment="Left"/>
+            <PasswordBox Name="passwordTextBox" PlaceholderText="密碼" Margin="5" KeyUp="inputs_KeyUp" FontFamily="Global User Interface"  Width="250" HorizontalAlignment="Left"/>
+            <Button Name="loginButton" Content="登入" Click="loginButton_Click" Margin="0,5,0,0"  Width="260" HorizontalAlignment="Left"/>
         </StackPanel>
     </Grid>
 </Page>
