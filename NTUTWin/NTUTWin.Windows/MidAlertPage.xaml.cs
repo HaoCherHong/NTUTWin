@@ -1,4 +1,6 @@
-﻿using System;
+﻿#define DEBUG_DOC
+
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -26,6 +28,9 @@ namespace NTUTWin
     /// </summary>
     public sealed partial class MidAlertPage : Page
     {
+#if DEBUG_DOC
+        private int skip = 0;
+#endif
         public MidAlertPage()
         {
             this.InitializeComponent();
@@ -36,8 +41,66 @@ namespace NTUTWin
             //Send GA View
             App.Current.GATracker.SendView("MidAlertPage");
 
+#if DEBUG && DEBUG_DOC
+            Windows.UI.Core.CoreWindow.GetForCurrentThread().KeyDown += async (Windows.UI.Core.CoreWindow keySender, Windows.UI.Core.KeyEventArgs keyEvent) =>
+            {
+                if (keyEvent.VirtualKey == Windows.System.VirtualKey.Right)
+                    await DebugMidAlert();
+            };
+#endif
             await GetMidAlert();
+
         }
+
+#if DEBUG && DEBUG_DOC
+        private async Task DebugMidAlert()
+        {
+            courseNameTextBlock.Text = "";
+            var request = await NPAPI.DebugMidAlerts(skip++);
+            if (request.Success)
+            {
+                courseNameTextBlock.Text = "(請選擇)";
+                titleTextBlock.Text = request.Data.Semester + " 期中預警";
+                listView.ItemsSource = request.Data.Alerts;
+
+                //Send GA Event
+                string id = ApplicationData.Current.RoamingSettings.Values.ContainsKey("id") ? ApplicationData.Current.RoamingSettings.Values["id"] as string : "N/A";
+                App.Current.GATracker.SendEvent("Mid Alert", "Get Mid Alert", id, 0);
+
+                if (request.Data.Alerts.Count == 0)
+                {
+                    Debugger.Break();
+                    return;
+                }
+            }
+            else
+            {
+                Debugger.Break();
+
+                if (request.Error == NPAPI.RequestResult.ErrorType.Unauthorized)
+                {
+                    //Send GA Event
+                    App.Current.GATracker.SendEvent("Session", "Session Expired", null, 0);
+
+                    //Try background login
+                    var result = await NPAPI.BackgroundLogin();
+                    if (result.Success)
+                        await GetMidAlert();
+                    else
+                        Frame.Navigate(typeof(LoginPage));
+                }
+                else
+                {
+                    listView.Items.Clear();
+                    listView.Items.Add("讀取失敗，請稍後再試。");
+                    listView.Items.Add(request.Message);
+                }
+
+                return;
+            }
+            await DebugMidAlert();
+        }
+#endif
 
         private async Task GetMidAlert()
         {
