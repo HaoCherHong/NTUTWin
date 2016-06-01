@@ -433,6 +433,41 @@ namespace NTUTWin
             }
         }
 
+        public static async Task<RequestResult<CourseDetail>> GetCourseDetail(string courseId)
+        {
+            //courseId = "217086";
+            //courseId = "217083";
+            //courseId = "193085";
+            //courseId = "209568";
+            //courseId = "220082";
+            //courseId = "209568";
+            try
+            {
+                var url = "http://aps.ntut.edu.tw/course/tw/Select.jsp";
+                var parameters = new Dictionary<string, object>() { { "code", courseId }, { "format", -1 } };
+                var response = await Request(url, "POST", parameters);
+                string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync(), true);
+                response.Dispose();
+
+                if (responseString.Contains("《尚未登錄入口網站》 或 《應用系統連線已逾時》"))
+                    return new RequestResult<CourseDetail>(false, RequestResult.ErrorType.Unauthorized, "連線逾時", null);
+
+                //SendStat(url, "post", responseString, parameters);
+
+                var detail = CourseDetail.Parse(responseString);
+
+                return new RequestResult<CourseDetail>(true, RequestResult.ErrorType.None, null, detail);
+            }
+            catch (HttpRequestException e)
+            {
+                return new RequestResult<CourseDetail>(false, RequestResult.ErrorType.HttpError, e.Message, null);
+            }
+            catch (Exception e)
+            {
+                return new RequestResult<CourseDetail>(false, RequestResult.ErrorType.Unknown, e.Message, null);
+            }
+        }
+
         public static async Task<RequestResult> SendAttendenceAndRewardsStat()
         {
             try

@@ -7,7 +7,7 @@ namespace NTUTWin
 {
     class Course
     {
-        public int IdForSelect { get; set; }
+        public string IdForSelect { get; set; }
         public string IdForCurr { get; set; }
         public int Phase { get; set; }
         public int Hours { get; set; }
@@ -47,7 +47,7 @@ namespace NTUTWin
             //Get 課號
             match = Regex.Match(tdMatches[0].Value, ">([0-9]+)</A>");
             if(match.Success)
-                course.IdForSelect = int.Parse(match.Groups[1].Value);
+                course.IdForSelect = match.Groups[1].Value;
             //Get 課程名稱
             match = Regex.Match(tdMatches[1].Value, "code=([a-zA-Z0-9]+)\">([^<]+)</A>");
             if (match.Success)
