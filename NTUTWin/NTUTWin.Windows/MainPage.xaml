@@ -64,6 +64,7 @@
                 <ListViewItem Name="CurriculumListViewItem">查課表</ListViewItem>
                 <ListViewItem Name="ScheduleListViewItem">行事曆</ListViewItem>
                 <ListViewItem Name="MidAlertListViewItem">期中預警</ListViewItem>
+                <ListViewItem Name="CreditsListViewItem">學分查詢</ListViewItem>
             </ListView>
             <Button Name="rateAndReviewButton" Content="意見與評分" Grid.Row="2" HorizontalAlignment="Stretch" BorderThickness="0" Click="rateAndReviewButton_Click"/>
             <Button Name="logoutButton" Content="登出" Grid.Row="3" HorizontalAlignment="Stretch" BorderThickness="0" Click="logoutButton_Click"/>

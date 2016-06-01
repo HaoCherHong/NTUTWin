@@ -17,6 +17,7 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)Course.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CourseDetail.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)Credits.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MidAlerts.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)NPAPI.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Schedule.cs" />

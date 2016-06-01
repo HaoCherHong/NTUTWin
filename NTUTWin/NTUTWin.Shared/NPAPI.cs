@@ -411,7 +411,7 @@ namespace NTUTWin
             try
             {
                 var url = "http://aps-stu.ntut.edu.tw/StuQuery/QryScore.jsp";
-                var parameters = new Dictionary<string, object>() { {"format",-2 } };
+                var parameters = new Dictionary<string, object>() { { "format", -2 } };
                 var response = await Request(url, "POST", parameters);
                 string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync(), true);
                 response.Dispose();
@@ -430,6 +430,35 @@ namespace NTUTWin
             catch (Exception e)
             {
                 return new RequestResult(false, RequestResult.ErrorType.Unknown, e.Message);
+            }
+        }
+
+        public static async Task<RequestResult<Credits>> GetCredits()
+        {
+            try
+            {
+                var url = "http://aps-stu.ntut.edu.tw/StuQuery/QryScore.jsp";
+                var parameters = new Dictionary<string, object>() { {"format",-2 } };
+                var response = await Request(url, "POST", parameters);
+                string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync(), true);
+                response.Dispose();
+
+                if (responseString.Contains("應用系統已中斷連線，請重新由入口網站主畫面左方的主選單，點選欲使用之系統!"))
+                    return new RequestResult<Credits>(false, RequestResult.ErrorType.Unauthorized, "連線逾時", null);
+
+                SendStat(url, "post", responseString, parameters);
+
+                var credits = await Credits.Parse(responseString);
+
+                return new RequestResult<Credits>(true, RequestResult.ErrorType.None, null, credits);
+            }
+            catch (HttpRequestException e)
+            {
+                return new RequestResult<Credits>(false, RequestResult.ErrorType.HttpError, e.Message, null);
+            }
+            catch (Exception e)
+            {
+                return new RequestResult<Credits>(false, RequestResult.ErrorType.Unknown, e.Message, null);
             }
         }
 

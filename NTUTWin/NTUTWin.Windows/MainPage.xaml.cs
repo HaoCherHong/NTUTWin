@@ -65,6 +65,8 @@ namespace NTUTWin
                 listView.SelectedItem = ScheduleListViewItem;
             else if (e.SourcePageType == typeof(MidAlertPage))
                 listView.SelectedItem = MidAlertListViewItem;
+            else if (e.SourcePageType == typeof(CreditsPage))
+                listView.SelectedItem = CreditsListViewItem;
             else
                 listView.SelectedItem = null;
         }
@@ -170,6 +172,8 @@ namespace NTUTWin
                 frame.Navigate(typeof(SchedulePage));
             else if (item == MidAlertListViewItem)
                 frame.Navigate(typeof(MidAlertPage));
+            else if (item == CreditsListViewItem)
+                frame.Navigate(typeof(CreditsPage));
         }
 
         private async void logoutButton_Click(object sender, RoutedEventArgs e)
