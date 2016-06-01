@@ -6,6 +6,7 @@ using Windows.Storage;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
+using Windows.UI.Xaml.Navigation;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -27,10 +28,10 @@ namespace NTUTWin
             //Send GA View
             App.Current.GATracker.SendView("MainPage");
 
+            frame.Navigated += Frame_Navigated;
+
             //Default Page
             listView.SelectedItem = CurriculumListViewItem;
-
-            frame.Navigated += Frame_Navigated;
 
             var roamingSettings = ApplicationData.Current.RoamingSettings;
 
@@ -59,6 +60,8 @@ namespace NTUTWin
 
         private void Frame_Navigated(object sender, Windows.UI.Xaml.Navigation.NavigationEventArgs e)
         {
+            //Set listView selection and prevent event benn triggered
+            listView.SelectionChanged -= ListView_SelectionChanged;
             if (e.SourcePageType == typeof(CurriculumPage))
                 listView.SelectedItem = CurriculumListViewItem;
             else if (e.SourcePageType == typeof(SchedulePage))
@@ -69,6 +72,15 @@ namespace NTUTWin
                 listView.SelectedItem = CreditsListViewItem;
             else
                 listView.SelectedItem = null;
+            listView.SelectionChanged += ListView_SelectionChanged;
+
+            //Set navigate back visibility
+
+            foreach (PageStackEntry entry in frame.BackStack)
+                if (entry.SourcePageType == typeof(LoginPage))
+                    frame.BackStack.Remove(entry);
+
+            navigateBackButton.Visibility = frame.CanGoBack ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private async Task<bool> AskForCreditStat()
@@ -166,6 +178,10 @@ namespace NTUTWin
         private void ListView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
             var item = listView.SelectedItem;
+
+            if (item == null)
+                return;
+
             if (item == CurriculumListViewItem)
                 frame.Navigate(typeof(CurriculumPage));
             else if (item == ScheduleListViewItem)
@@ -174,6 +190,9 @@ namespace NTUTWin
                 frame.Navigate(typeof(MidAlertPage));
             else if (item == CreditsListViewItem)
                 frame.Navigate(typeof(CreditsPage));
+
+            frame.BackStack.Clear();
+            navigateBackButton.Visibility = Visibility.Collapsed;
         }
 
         private async void logoutButton_Click(object sender, RoutedEventArgs e)
@@ -201,6 +220,12 @@ namespace NTUTWin
 
             //Send GA Event
             App.Current.GATracker.SendEvent("Other", "Go Rating Page", null, 0);
+        }
+
+        private void navigateBackButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (frame.CanGoBack)
+                frame.GoBack();
         }
     }
 }

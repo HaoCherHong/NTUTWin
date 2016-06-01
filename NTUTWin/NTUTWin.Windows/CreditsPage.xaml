@@ -1,16 +1,57 @@
 ﻿<Page
-    x:Class="NTUTWin.CreditsPage"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:NTUTWin"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:System="using:System"
+    x:Class="NTUTWin.CreditsPage"
     Loaded="Page_Loaded"
     mc:Ignorable="d">
 
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
         <TextBlock x:Name="titleTextBlock" FontSize="32" Text="學分查詢" Margin="20" Grid.Row="0"/>
-        <ListView Name="semestersListView" SelectionMode="Single"/>
+        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto">
+            <Grid Margin="20,0,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition MinWidth="300" Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="1">
+                    <TextBlock FontSize="24" Text="學期總覽" />
+                    <ComboBox x:Name="semestersComboBox" Margin="0,10" SelectionChanged="semestersComboBox_SelectionChanged"/>
+                    <TextBlock x:Name="semesterSummaryTextBlock" FontSize="16" Margin="0,10" Grid.Row="2"/>
+                    <Grid x:Name="creditsGrid" Grid.Row="3">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="課號" FontSize="16" Margin="0,10,10,0" Grid.Column="0"/>
+                        <TextBlock Text="修" FontSize="16" Margin="10,10,10,0" Grid.Column="1"/>
+                        <TextBlock Text="課程名稱" FontSize="16" Margin="10,10,10,0" Grid.Column="2"/>
+                        <TextBlock Text="學分" FontSize="16" Margin="10,10,10,0" Grid.Column="3"/>
+                        <TextBlock Text="成績" FontSize="16" Margin="10,10,10,0" Grid.Column="4"/>
+                        <TextBlock Text="備註" FontSize="16" Margin="10,10,10,0" Grid.Column="5"/>
+                    </Grid>
+
+                </StackPanel>
+
+                <StackPanel Grid.Column="0">
+                    <TextBlock FontSize="24" Text="學分總覽"/>
+                    <TextBlock Name="summaryTextBlock" FontSize="16" Text="讀取中..." Margin="0,10"/>
+                </StackPanel>
+            </Grid>
+        </ScrollViewer>
     </Grid>
 
 </Page>

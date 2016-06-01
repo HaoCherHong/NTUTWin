@@ -78,6 +78,28 @@ namespace NTUTWin
             detail.Credits = float.Parse(match.Groups[7].Value);
             detail.Type = match.Groups[8].Value;
 
+            switch (detail.Type)
+            {
+                case "○":
+                    detail.Type = "部訂共同必修";
+                    break;
+                case "△":
+                    detail.Type = "校訂共同必修";
+                    break;
+                case "☆":
+                    detail.Type = "共同選修";
+                    break;
+                case "●":
+                    detail.Type = "部訂專業必修";
+                    break;
+                case "▲":
+                    detail.Type = "校訂專業必修";
+                    break;
+                case "★":
+                    detail.Type = "專業選修";
+                    break;
+            }
+
             foreach (Capture capture in match.Groups["teachers"].Captures)
                 detail.Teachers.Add(capture.Value);
 

@@ -21,7 +21,7 @@
             <TextBlock Name="courseNameTextBlock" FontSize="22" Margin="0,0,0,10" Text="讀取中..."/>
             <TextBlock Name="detailTextBlock" FontSize="16"/>
         </StackPanel>
-        <ScrollViewer Grid.Row="1" Grid.Column="1">
+        <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Grid.Row="1" Grid.Column="1">
             <Grid Name="studentsGrid" >
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="Auto"/>

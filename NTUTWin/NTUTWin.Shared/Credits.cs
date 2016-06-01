@@ -25,9 +25,20 @@ namespace NTUTWin
             public float CreditsWanted { get; set; }
             public float CreditsGot { get; set; }
             public List<Credit> Credits { get; set; }
+
+            public override string ToString()
+            {
+                return Name;
+            }
         }
 
         public List<Semester> Semesters { get; set; }
+
+        public float TotalCreditsGot { get; private set; }
+
+        public Dictionary<string, float> TotalTypeCredits { get; private set; } = new Dictionary<string, float>();
+
+        public Dictionary<string, float> TotalDetailTypeCredits { get; private set; } = new Dictionary<string, float>();
 
         public static async Task<Credits> Parse(string html)
         {
@@ -43,17 +54,37 @@ namespace NTUTWin
                 semesters.Add(ParseTable(match));
             credits.Semesters = semesters;
 
-            //Get all course details
+            //Summary & Get all course details
             foreach (Semester semester in semesters)
             {
                 foreach (Credit credit in semester.Credits)
                 {
                     var detailResult = await NPAPI.GetCourseDetail(credit.CourseId);
                     if (detailResult.Success)
+                    {
+                        //Set course detail
                         credit.Detail = detailResult.Data;
+
+                        //Sum credits for each detailed type
+                        if(credit.Grade >= 60)
+                            if (credits.TotalDetailTypeCredits.ContainsKey(credit.Detail.Type))
+                                credits.TotalDetailTypeCredits[credit.Detail.Type] += credit.Credits;
+                            else
+                                credits.TotalDetailTypeCredits.Add(credit.Detail.Type, credit.Credits);
+                    }
                     else
                         throw new System.Exception(detailResult.Message);
+
+                    //Sum credits for each type
+                    if (credit.Grade >= 60)
+                        if (credits.TotalTypeCredits.ContainsKey(credit.Type))
+                            credits.TotalTypeCredits[credit.Type] += credit.Credits;
+                        else
+                            credits.TotalTypeCredits.Add(credit.Type, credit.Credits);
                 }
+
+                //Sum semester credits
+                credits.TotalCreditsGot += semester.CreditsGot;
             }
 
             return credits;
