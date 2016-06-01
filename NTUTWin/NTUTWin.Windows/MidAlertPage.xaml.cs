@@ -1,23 +1,11 @@
-﻿#define DEBUG_DOC
+﻿//#define DEBUG_DOC
 
 using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.Storage;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 
 // 空白頁項目範本已記錄在 http://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -40,6 +28,8 @@ namespace NTUTWin
         {
             //Send GA View
             App.Current.GATracker.SendView("MidAlertPage");
+
+            courseDetailButton.Visibility = Visibility.Collapsed;
 
 #if DEBUG && DEBUG_DOC
             Windows.UI.Core.CoreWindow.GetForCurrentThread().KeyDown += async (Windows.UI.Core.CoreWindow keySender, Windows.UI.Core.KeyEventArgs keyEvent) =>
@@ -157,6 +147,7 @@ namespace NTUTWin
 
         private void listView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            courseDetailButton.Visibility = listView.SelectedItem is MidAlerts.MidAlert ? Visibility.Visible : Visibility.Collapsed;
             if (!(listView.SelectedItem is MidAlerts.MidAlert))
                 return;
             var alertItem = listView.SelectedItem as MidAlerts.MidAlert;
@@ -170,9 +161,12 @@ namespace NTUTWin
             detailTextBlock.Text = message;
         }
 
-        private void logoutButton_Click(object sender, RoutedEventArgs e)
+        private void courseDetailButton_Click(object sender, RoutedEventArgs e)
         {
-
+            if (!(listView.SelectedItem is MidAlerts.MidAlert))
+                return;
+            var alertItem = listView.SelectedItem as MidAlerts.MidAlert;
+            Frame.Navigate(typeof(CourseDetailPage), alertItem.CourseNumber);
         }
     }
 }

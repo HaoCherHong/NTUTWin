@@ -345,7 +345,7 @@ namespace NTUTWin
         {
             try
             {
-                var response = await Request("http://www.cc.ntut.edu.tw/~wwwoaa/oaa-nwww/oaa-cal/oaa-cal_099.html", "GET");
+                var response = await Request("http://www.cc.ntut.edu.tw/~wwwoaa/oaa-nwww/oaa-cal/oaa-cal_104.html", "GET");
                 string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync(), false);
                 response.Dispose();
 
