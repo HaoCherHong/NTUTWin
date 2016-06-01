@@ -49,7 +49,13 @@ namespace NTUTWin
                 calendar.DisplayDateStart = new DateTime(2016, 1, 1);
                 calendar.DisplayDateEnd = new DateTime(2016, 12, 31);
                 calendar.SelectionMode = WinRTXamlToolkit.Controls.CalendarSelectionMode.SingleDate;
-                listView.ItemsSource = schedule.monthSchedules[calendar.DisplayDate.Month];
+                if (schedule.monthSchedules.ContainsKey(calendar.DisplayDate.Month))
+                    listView.ItemsSource = schedule.monthSchedules[calendar.DisplayDate.Month];
+                else
+                {
+                    listView.ItemsSource = null;
+                    listView.Items.Clear();
+                }
             }
             else
             {
@@ -61,8 +67,14 @@ namespace NTUTWin
 
         private void calendar_DisplayDateChanged(object sender, WinRTXamlToolkit.Controls.CalendarDateChangedEventArgs e)
         {
-            if(schedule != null)
-                listView.ItemsSource = schedule.monthSchedules[calendar.DisplayDate.Month];
+            if (schedule != null)
+                if (schedule.monthSchedules.ContainsKey(calendar.DisplayDate.Month))
+                    listView.ItemsSource = schedule.monthSchedules[calendar.DisplayDate.Month];
+                else
+                {
+                    listView.ItemsSource = null;
+                    listView.Items.Clear();
+                }
         }
 
         private void calendar_SelectedDatesChanged(object sender, SelectionChangedEventArgs e)

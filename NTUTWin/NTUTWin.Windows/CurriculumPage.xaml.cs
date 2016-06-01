@@ -333,7 +333,18 @@ namespace NTUTWin
             semesterComboBox.Visibility = semesterComboBox.Items.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
             if (roamingSettings.Values.ContainsKey("courses"))
-                FillCoursesIntoGrid(JsonConvert.DeserializeObject<List<Course>>(roamingSettings.Values["courses"].ToString()));
+            {
+                try
+                {
+                    var courses = JsonConvert.DeserializeObject<List<Course>>(roamingSettings.Values["courses"].ToString());
+                    FillCoursesIntoGrid(courses);
+                }
+                catch(Exception exception)
+                {
+                    
+                }
+                
+            }
 
             //if (!roamingSettings.Values.ContainsKey("JSESSIONID"))
             //    Frame.Navigate(typeof(LoginPage));
