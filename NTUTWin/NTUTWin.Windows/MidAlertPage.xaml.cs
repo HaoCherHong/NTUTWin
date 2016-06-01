@@ -29,6 +29,8 @@ namespace NTUTWin
             //Send GA View
             App.Current.GATracker.SendView("MidAlertPage");
 
+            courseDetailButton.Visibility = Visibility.Collapsed;
+
 #if DEBUG && DEBUG_DOC
             Windows.UI.Core.CoreWindow.GetForCurrentThread().KeyDown += async (Windows.UI.Core.CoreWindow keySender, Windows.UI.Core.KeyEventArgs keyEvent) =>
             {
@@ -145,6 +147,7 @@ namespace NTUTWin
 
         private void listView_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
+            courseDetailButton.Visibility = listView.SelectedItem is MidAlerts.MidAlert ? Visibility.Visible : Visibility.Collapsed;
             if (!(listView.SelectedItem is MidAlerts.MidAlert))
                 return;
             var alertItem = listView.SelectedItem as MidAlerts.MidAlert;
@@ -156,6 +159,14 @@ namespace NTUTWin
                 alertItem.AlertSubmitted ? ((alertItem.Alerted ? "是" : "否") + " (" + alertItem.Ratio.Alerted + "/" + alertItem.Ratio.All + ")") : "尚未送出",
                 alertItem.Note);
             detailTextBlock.Text = message;
+        }
+
+        private void courseDetailButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!(listView.SelectedItem is MidAlerts.MidAlert))
+                return;
+            var alertItem = listView.SelectedItem as MidAlerts.MidAlert;
+            Frame.Navigate(typeof(CourseDetailPage), alertItem.CourseNumber);
         }
     }
 }

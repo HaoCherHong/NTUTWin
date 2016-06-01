@@ -44,6 +44,7 @@
             <StackPanel Orientation="Vertical" MinWidth="350" Grid.Column="1" Margin="20,0,0,0">
                 <TextBlock Name="courseNameTextBlock" FontSize="22" Margin="0,40,0,10" Text="(請選擇)"/>
                 <TextBlock Name="detailTextBlock" FontSize="16"/>
+                <Button Name="courseDetailButton" Content="課程資料" Click="courseDetailButton_Click"/>
             </StackPanel>
             <StackPanel Orientation="Vertical" Grid.Column="0">
                 <TextBlock Grid.Row="1" Margin="10" FontSize="14" Grid.Column="1">
