@@ -1,19 +1,12 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.Storage;
 using Windows.UI;
 using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
 using Windows.UI.Xaml.Input;
 using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
@@ -206,21 +199,45 @@ namespace NTUTWin
                 if (!string.IsNullOrWhiteSpace(course.Note))
                     content += course.Note;
 
-                await new MessageDialog(content, course.Name).ShowAsync();
+                var dialog = new MessageDialog(content, course.Name);
+                if(!(string.IsNullOrWhiteSpace(course.IdForSelect) || course.IdForSelect == "0"))
+                    dialog.Commands.Add(new UICommand("詳細資料", (command) =>
+                    {
+                        Frame.Navigate(typeof(CourseDetailPage), course.IdForSelect);
+                    }));
+                dialog.Commands.Add(new UICommand("關閉"));
 
                 //Send GA Event
                 App.Current.GATracker.SendEvent("Other", "Tap on Course", null, 0);
+
+                await dialog.ShowAsync();
             };
 
-            Brush backColor;
+            Brush backColor, hoverColor;
             if (DateTime.Today.DayOfWeek == (DayOfWeek)(day + 1 % 7))
+            {
                 backColor = new SolidColorBrush(Color.FromArgb(255, 209, 52, 56));
+                hoverColor = new SolidColorBrush(Color.FromArgb(255, 180, 52, 56));
+            }
             else
+            {
                 backColor = new SolidColorBrush(Color.FromArgb(128, 128, 128, 128));
+                hoverColor = new SolidColorBrush(Color.FromArgb(255, 128, 128, 128));
+            }
 
             border.Background = backColor;
             border.Padding = new Thickness(5);
             border.Margin = new Thickness(1);
+
+            border.PointerEntered += (sender, e) =>
+            {
+                border.Background = hoverColor;
+            };
+
+            border.PointerExited += (sender, e) =>
+            {
+                border.Background = backColor;
+            };
 
             return border;
         }
@@ -228,7 +245,7 @@ namespace NTUTWin
         private async Task SearchForId(string id)
         {
             //Disable user input
-            searchForIdTextBox.IsEnabled = semesterComboBox.IsEnabled = getSemestersButton.IsEnabled = false;
+            searchForIdTextBox.IsEnabled = searchSelfButton.IsEnabled = semesterComboBox.IsEnabled = getSemestersButton.IsEnabled = false;
 
             var semestersRequest = await NPAPI.GetSemesters(id);
             bool saveSearchId = true;
@@ -279,7 +296,7 @@ namespace NTUTWin
                 PutRoamingSetting("searchId", id);
 
             //Enableuser input
-            searchForIdTextBox.IsEnabled = semesterComboBox.IsEnabled = getSemestersButton.IsEnabled = true;
+            searchForIdTextBox.IsEnabled = searchSelfButton.IsEnabled = semesterComboBox.IsEnabled = getSemestersButton.IsEnabled = true;
 
             semesterComboBox.Focus(FocusState.Programmatic);
         }
@@ -299,58 +316,64 @@ namespace NTUTWin
             if (semesterComboBox.SelectedItem is Semester)
             {
                 //Disable user input
-                searchForIdTextBox.IsEnabled = semesterComboBox.IsEnabled = getSemestersButton.IsEnabled = false;
+                searchForIdTextBox.IsEnabled = searchSelfButton.IsEnabled = semesterComboBox.IsEnabled = getSemestersButton.IsEnabled = false;
                 await GetSchedule(semesterComboBox.SelectedItem as Semester);
                 //Enable user input
-                searchForIdTextBox.IsEnabled = semesterComboBox.IsEnabled = getSemestersButton.IsEnabled = true;
+                searchForIdTextBox.IsEnabled = searchSelfButton.IsEnabled = semesterComboBox.IsEnabled = getSemestersButton.IsEnabled = true;
             }
         }
 
-        private async void Page_Loaded(object sender, RoutedEventArgs e)
+        private void Page_Loaded(object sender, RoutedEventArgs e)
         {
             //Send GA View
             App.Current.GATracker.SendView("CurriculumPage");
+        }
 
-            if (roamingSettings.Values.ContainsKey("searchId"))
-                searchForIdTextBox.Text = roamingSettings.Values["searchId"].ToString();
-            else if (roamingSettings.Values.ContainsKey("id"))
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        {
+            if (e.Parameter != null)
             {
-                searchForIdTextBox.Text = roamingSettings.Values["id"].ToString();
-                await SearchForId(roamingSettings.Values["id"].ToString());
+                var searchId = e.Parameter as string;
+                searchForIdTextBox.Text = searchId;
+                await SearchForId(searchId);
             }
-
-            if (roamingSettings.Values.ContainsKey("name"))
+            else
             {
-                name = roamingSettings.Values["name"].ToString();
-                if (roamingSettings.Values.ContainsKey("semester"))
-                    searchResultLabelTextBlock.Text = name + " " + JsonConvert.DeserializeObject<Semester>(roamingSettings.Values["semester"].ToString());
-                else
-                    searchResultLabelTextBlock.Text = name;
-            }
-
-            if (roamingSettings.Values.ContainsKey("semesters"))
-                semesterComboBox.ItemsSource = JsonConvert.DeserializeObject<List<Semester>>(roamingSettings.Values["semesters"].ToString());
-            semesterComboBox.Visibility = semesterComboBox.Items.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-
-            if (roamingSettings.Values.ContainsKey("courses"))
-            {
-                try
+                if (roamingSettings.Values.ContainsKey("searchId"))
+                    searchForIdTextBox.Text = roamingSettings.Values["searchId"].ToString();
+                else if (roamingSettings.Values.ContainsKey("id"))
                 {
-                    var courses = JsonConvert.DeserializeObject<List<Course>>(roamingSettings.Values["courses"].ToString());
-                    FillCoursesIntoGrid(courses);
+                    searchForIdTextBox.Text = roamingSettings.Values["id"].ToString();
+                    await SearchForId(roamingSettings.Values["id"].ToString());
                 }
-                catch(Exception exception)
+
+                if (roamingSettings.Values.ContainsKey("name"))
                 {
-                    
+                    name = roamingSettings.Values["name"].ToString();
+                    if (roamingSettings.Values.ContainsKey("semester"))
+                        searchResultLabelTextBlock.Text = name + " " + JsonConvert.DeserializeObject<Semester>(roamingSettings.Values["semester"].ToString());
+                    else
+                        searchResultLabelTextBlock.Text = name;
                 }
-                
+
+                if (roamingSettings.Values.ContainsKey("semesters"))
+                    semesterComboBox.ItemsSource = JsonConvert.DeserializeObject<List<Semester>>(roamingSettings.Values["semesters"].ToString());
+                semesterComboBox.Visibility = semesterComboBox.Items.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+
+                if (roamingSettings.Values.ContainsKey("courses"))
+                {
+                    try
+                    {
+                        var courses = JsonConvert.DeserializeObject<List<Course>>(roamingSettings.Values["courses"].ToString());
+                        FillCoursesIntoGrid(courses);
+                    }
+                    catch (Exception exception)
+                    {
+
+                    }
+
+                }
             }
-
-            //if (!roamingSettings.Values.ContainsKey("JSESSIONID"))
-            //    Frame.Navigate(typeof(LoginPage));
-
-            //searchAppBarToggleButton.IsChecked = !roamingSettings.Values.ContainsKey("courses");
-            //searchAppBarToggleButton.Visibility = roamingSettings.Values.ContainsKey("courses") ? Visibility.Visible : Visibility.Collapsed;
         }
 
         private async void searchForIdTextBox_KeyUp(object sender, KeyRoutedEventArgs e)
@@ -369,6 +392,15 @@ namespace NTUTWin
         private void schoolEventScheduleButton_Click(object sender, RoutedEventArgs e)
         {
             Frame.Navigate(typeof(SchedulePage));
+        }
+
+        private async void searchSelfButton_Click(object sender, RoutedEventArgs e)
+        {
+            if (!roamingSettings.Values.ContainsKey("id"))
+                return;
+
+            searchForIdTextBox.Text = roamingSettings.Values["id"].ToString();
+            await SearchForId(roamingSettings.Values["id"].ToString());
         }
     }
 }

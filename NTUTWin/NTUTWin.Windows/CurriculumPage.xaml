@@ -31,7 +31,7 @@
                 </Grid>
 
                 <TextBlock Name="unscheduledCoursesTextBlock" Text="其他" FontSize="24" Margin="10, 0, 10, 0"/>
-                <GridView Name="unscheduledCoursesGrid" Margin="10, 0, 10, 0"/>
+                <GridView Name="unscheduledCoursesGrid" Margin="10, 0, 10, 0" SelectionMode="None"/>
 
             </StackPanel>
         </ScrollViewer>
@@ -41,13 +41,15 @@
                 <TextBlock Text="查課表" FontSize="24" Margin="0,0,0,10"/>
                 <Grid>
                     <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="*"/>
                         <ColumnDefinition Width="Auto"/>
                     </Grid.ColumnDefinitions>
-                    <TextBox Name="searchForIdTextBox" PlaceholderText="查詢學號" InputScope="Search" KeyUp="searchForIdTextBox_KeyUp" Margin="0,0,10,0" Grid.Column="0"/>
-                    <ComboBox x:Name="semesterComboBox" PlaceholderText="請選擇學期" SelectionChanged="semesterComboBox_SelectionChanged" Margin="0,0,10,0" Grid.Column="1"/>
-                    <Button Name="getSemestersButton" Content="更新學期" Grid.Column="2" Click="getSemestersButton_Click"/>
+                    <Button Name="searchSelfButton" Content="自己" Grid.Column="0" Click="searchSelfButton_Click"/>
+                    <TextBox Name="searchForIdTextBox" PlaceholderText="查詢學號" InputScope="Search" KeyUp="searchForIdTextBox_KeyUp" Margin="5,0,5,0" Grid.Column="1"/>
+                    <ComboBox x:Name="semesterComboBox" PlaceholderText="請選擇學期" SelectionChanged="semesterComboBox_SelectionChanged" Margin="5,0,5,0" Grid.Column="2"/>
+                    <Button Name="getSemestersButton" Content="更新學期" Grid.Column="3" Click="getSemestersButton_Click"/>
                 </Grid>
                 
             </StackPanel>

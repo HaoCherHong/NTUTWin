@@ -27,7 +27,10 @@ namespace NTUTWin
             //Send GA View
             App.Current.GATracker.SendView("MainPage");
 
+            //Default Page
             listView.SelectedItem = CurriculumListViewItem;
+
+            frame.Navigated += Frame_Navigated;
 
             var roamingSettings = ApplicationData.Current.RoamingSettings;
 
@@ -52,6 +55,18 @@ namespace NTUTWin
                     roamingSettings.Values["AskedForAttendenceAndRewardsStat"] = result;
                 }
             }
+        }
+
+        private void Frame_Navigated(object sender, Windows.UI.Xaml.Navigation.NavigationEventArgs e)
+        {
+            if (e.SourcePageType == typeof(CurriculumPage))
+                listView.SelectedItem = CurriculumListViewItem;
+            else if (e.SourcePageType == typeof(SchedulePage))
+                listView.SelectedItem = ScheduleListViewItem;
+            else if (e.SourcePageType == typeof(MidAlertPage))
+                listView.SelectedItem = MidAlertListViewItem;
+            else
+                listView.SelectedItem = null;
         }
 
         private async Task<bool> AskForCreditStat()
