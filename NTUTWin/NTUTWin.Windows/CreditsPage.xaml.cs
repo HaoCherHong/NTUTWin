@@ -141,6 +141,9 @@ namespace NTUTWin
                 courseIdTextBlock.Margin = new Thickness(0, 10, 10, 10);
                 courseIdTextBlock.FontSize = typeTextBlock.FontSize = nameTextBlock.FontSize = creditsTextBlock.FontSize = gradeTextBlock.FontSize = noteTextBlock.FontSize = 16;
 
+                if(credit.Grade < 60)
+                    courseIdTextBlock.Opacity = typeTextBlock.Opacity = nameTextBlock.Opacity = creditsTextBlock.Opacity = gradeTextBlock.Opacity = noteTextBlock.Opacity = 0.5;
+
                 Grid.SetColumn(courseIdTextBlock, 0);
                 Grid.SetColumn(typeTextBlock, 1);
                 Grid.SetColumn(nameTextBlock, 2);
