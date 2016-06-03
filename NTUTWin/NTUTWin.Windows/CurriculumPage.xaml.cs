@@ -164,6 +164,9 @@ namespace NTUTWin
             var textBlock = new TextBlock();
 
             textBlock.Text = course.Name;
+            //for (int i = 0, count = course.ClassRooms.Count; i < count; i++)
+                //textBlock.Text += (i == 0 ? "\n" : "") + course.ClassRooms[i] + (i < count - 1 ? "、" : "");
+
             textBlock.TextAlignment = TextAlignment.Center;
             textBlock.TextWrapping = TextWrapping.Wrap;
             textBlock.FontSize = 16;
