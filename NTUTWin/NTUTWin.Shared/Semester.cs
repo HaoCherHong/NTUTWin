@@ -12,7 +12,6 @@ namespace NTUTWin
             SemesterNumber = semester;
         }
 
-
         public override string ToString()
         {
             return string.Format("{0}年第{1}學期", Year, SemesterNumber);

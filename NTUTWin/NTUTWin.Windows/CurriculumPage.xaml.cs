@@ -25,6 +25,7 @@ namespace NTUTWin
         //private StatusBarProgressIndicator progressbar = StatusBar.GetForCurrentView().ProgressIndicator;
 
         private ApplicationDataContainer roamingSettings = ApplicationData.Current.RoamingSettings;
+        private ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
 
         public CurriculumPage()
         {
@@ -56,8 +57,8 @@ namespace NTUTWin
                 //Save to roaming settings
                 var coursesJson = JsonConvert.SerializeObject(coursesRequest.Data);
                 var semesterJson = JsonConvert.SerializeObject(semester);
-                PutRoamingSetting("courses", coursesJson.ToString());
-                PutRoamingSetting("semester", semesterJson.ToString());
+                SaveToSettings(localSettings, "courses", coursesJson.ToString());
+                SaveToSettings(localSettings, "semester", semesterJson.ToString());
 
                 //Send GA Event
                 bool searchSelf = roamingSettings.Values.ContainsKey("id") && roamingSettings.Values["id"] as string == searchForIdTextBox.Text;
@@ -262,12 +263,11 @@ namespace NTUTWin
                 semesterComboBox.ItemsSource = semestersRequest.Semesters;
                 if (semesterComboBox.Items.Count > 0)
                     semesterComboBox.SelectedIndex = 0;
-                semesterComboBox.Visibility = semesterComboBox.Items.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
-                //Save request to roaming settings
-                PutRoamingSetting("name", name);
+                //Save request to local settings
+                SaveToSettings(localSettings, "name", name);
                 var semestersJson = JsonConvert.SerializeObject(semestersRequest.Semesters);
-                PutRoamingSetting("semesters", semestersJson.ToString());
+                SaveToSettings(localSettings, "semesters", semestersJson.ToString());
 
                 //Send GA Event
                 bool searchSelf = roamingSettings.Values.ContainsKey("id") && roamingSettings.Values["id"] as string == id;
@@ -296,7 +296,7 @@ namespace NTUTWin
             }
 
             if (saveSearchId)
-                PutRoamingSetting("searchId", id);
+                SaveToSettings(localSettings, "searchId", id);
 
             //Enableuser input
             searchForIdTextBox.IsEnabled = searchSelfButton.IsEnabled = semesterComboBox.IsEnabled = getSemestersButton.IsEnabled = true;
@@ -304,12 +304,12 @@ namespace NTUTWin
             semesterComboBox.Focus(FocusState.Programmatic);
         }
 
-        private void PutRoamingSetting(string key, object value)
+        private void SaveToSettings(ApplicationDataContainer settings, string key, object value)
         {
-            if (!roamingSettings.Values.ContainsKey(key))
-                roamingSettings.Values.Add(key, value);
+            if (!settings.Values.ContainsKey(key))
+                settings.Values.Add(key, value);
             else
-                roamingSettings.Values[key] = value;
+                settings.Values[key] = value;
         }
 
         private async void semesterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -336,45 +336,67 @@ namespace NTUTWin
         {
             if (e.Parameter != null)
             {
+                //Search by navigation parameter
                 var searchId = e.Parameter as string;
                 searchForIdTextBox.Text = searchId;
                 await SearchForId(searchId);
             }
             else
             {
-                if (roamingSettings.Values.ContainsKey("searchId"))
-                    searchForIdTextBox.Text = roamingSettings.Values["searchId"].ToString();
-                else if (roamingSettings.Values.ContainsKey("id"))
+                //Restore cached data
+                //Cache all variables needed, restore them if no exception occured
+                try
                 {
-                    searchForIdTextBox.Text = roamingSettings.Values["id"].ToString();
-                    await SearchForId(roamingSettings.Values["id"].ToString());
-                }
+                    string searchId = null, name = null, semesterName = null;
+                    List<Semester> semesters = null;
+                    List<Course> courses = null;
 
-                if (roamingSettings.Values.ContainsKey("name"))
-                {
-                    name = roamingSettings.Values["name"].ToString();
-                    if (roamingSettings.Values.ContainsKey("semester"))
-                        searchResultLabelTextBlock.Text = name + " " + JsonConvert.DeserializeObject<Semester>(roamingSettings.Values["semester"].ToString());
+                    if (localSettings.Values.ContainsKey("searchId"))
+                        searchId = localSettings.Values["searchId"].ToString();
+                    else if (roamingSettings.Values.ContainsKey("id"))
+                        searchId = roamingSettings.Values["id"].ToString();
+                
+                    if (localSettings.Values.ContainsKey("name"))
+                        name = localSettings.Values["name"].ToString();
+
+                    if (localSettings.Values.ContainsKey("semester"))
+                        semesterName = JsonConvert.DeserializeObject<Semester>(localSettings.Values["semester"] as string).ToString();
+
+                    if (localSettings.Values.ContainsKey("semesters"))
+                        semesters = JsonConvert.DeserializeObject<List<Semester>>(localSettings.Values["semesters"].ToString());
+
+                    if (localSettings.Values.ContainsKey("courses"))
+                        courses = JsonConvert.DeserializeObject<List<Course>>(localSettings.Values["courses"].ToString());
+
+                    //Restore data
+                    if (searchId != null)
+                        searchForIdTextBox.Text = searchId;
+
+                    if (name != null)
+                    {
+                        this.name = name;
+                        searchResultLabelTextBlock.Text = name + (semesterName != null ? " " + semesterName : "");
+                    }
                     else
-                        searchResultLabelTextBlock.Text = name;
-                }
+                        throw new Exception("Name not cached");
 
-                if (roamingSettings.Values.ContainsKey("semesters"))
-                    semesterComboBox.ItemsSource = JsonConvert.DeserializeObject<List<Semester>>(roamingSettings.Values["semesters"].ToString());
-                semesterComboBox.Visibility = semesterComboBox.Items.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+                    if (semesters != null)
+                        semesterComboBox.ItemsSource = semesters;
 
-                if (roamingSettings.Values.ContainsKey("courses"))
-                {
-                    try
-                    {
-                        var courses = JsonConvert.DeserializeObject<List<Course>>(roamingSettings.Values["courses"].ToString());
+                    if (courses != null)
                         FillCoursesIntoGrid(courses);
-                    }
-                    catch (Exception exception)
-                    {
+                }
+                catch (Exception exception)
+                {
+                    //Clear settings if parsing failed
+                    localSettings.Values.Remove("searchId");
+                    localSettings.Values.Remove("name");
+                    localSettings.Values.Remove("semester");
+                    localSettings.Values.Remove("semesters");
+                    localSettings.Values.Remove("courses");
 
-                    }
-
+                    //Send GA Exception
+                    App.Current.GATracker.SendException(exception.Message, false);
                 }
             }
         }

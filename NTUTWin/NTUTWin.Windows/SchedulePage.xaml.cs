@@ -29,7 +29,7 @@ namespace NTUTWin
             this.InitializeComponent();
         }
 
-        private async void Page_Loaded(object sender, RoutedEventArgs e)
+        private void Page_Loaded(object sender, RoutedEventArgs e)
         {
             //Send GA View
             App.Current.GATracker.SendView("SchedulePage");

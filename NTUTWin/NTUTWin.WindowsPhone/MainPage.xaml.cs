@@ -26,6 +26,7 @@ namespace NTUTWin
         private StatusBarProgressIndicator progressbar = StatusBar.GetForCurrentView().ProgressIndicator;
 
         private ApplicationDataContainer roamingSettings = ApplicationData.Current.RoamingSettings;
+        private ApplicationDataContainer localSettings = ApplicationData.Current.LocalSettings;
 
         public MainPage()
         {
@@ -51,14 +52,11 @@ namespace NTUTWin
                 //Update result label
                 searchResultLabelTextBlock.Text = name + " " + semester;
 
-                //Show searchAppBarToggleButton
-                searchAppBarToggleButton.Visibility = Visibility.Visible;
-
                 //Save to roaming settings
                 var coursesJson = JsonConvert.SerializeObject(coursesRequest.Data);
                 var semesterJson = JsonConvert.SerializeObject(semester);
-                PutRoamingSetting("courses", coursesJson.ToString());
-                PutRoamingSetting("semester", semesterJson.ToString());
+                SaveToSettings(localSettings, "courses", coursesJson.ToString());
+                SaveToSettings(localSettings, "semester", semesterJson.ToString());
 
                 //Send GA Event
                 bool searchSelf = roamingSettings.Values.ContainsKey("id") && roamingSettings.Values["id"] as string == searchForIdTextBox.Text;
@@ -235,9 +233,9 @@ namespace NTUTWin
                 semesterComboBox.Visibility = semesterComboBox.Items.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
 
                 //Save request to roaming settings
-                PutRoamingSetting("name", name);
+                SaveToSettings(localSettings, "name", name);
                 var semestersJson = JsonConvert.SerializeObject(semestersRequest.Semesters);
-                PutRoamingSetting("semesters", semestersJson.ToString());
+                SaveToSettings(localSettings, "semesters", semestersJson.ToString());
 
                 //Send GA Event
                 bool searchSelf = roamingSettings.Values.ContainsKey("id") && roamingSettings.Values["id"] as string == id;
@@ -266,15 +264,75 @@ namespace NTUTWin
             }
             
             if (saveSearchId)
-                PutRoamingSetting("searchId", id);
+                SaveToSettings(localSettings, "searchId", id);
         }
 
-        private void PutRoamingSetting(string key, object value)
+        private void RestoreCachedData()
         {
-            if (!roamingSettings.Values.ContainsKey(key))
-                roamingSettings.Values.Add(key, value);
+            //Cache all variables needed, restore them if no exception occured
+            List<Course> courses = null;
+            try
+            {
+                string searchId = null, name = null, semesterName = null;
+                List<Semester> semesters = null;
+
+                if (roamingSettings.Values.ContainsKey("searchId"))
+                    searchId = roamingSettings.Values["searchId"].ToString();
+                else if (roamingSettings.Values.ContainsKey("id"))
+                    searchId = roamingSettings.Values["id"].ToString();
+
+                if (localSettings.Values.ContainsKey("name"))
+                    name = localSettings.Values["name"].ToString();
+
+                if (localSettings.Values.ContainsKey("semester"))
+                    semesterName = JsonConvert.DeserializeObject<Semester>(localSettings.Values["semester"] as string).ToString();
+
+                if (localSettings.Values.ContainsKey("semesters"))
+                    semesters = JsonConvert.DeserializeObject<List<Semester>>(localSettings.Values["semesters"].ToString());
+
+                if (localSettings.Values.ContainsKey("courses"))
+                    courses = JsonConvert.DeserializeObject<List<Course>>(localSettings.Values["courses"].ToString());
+                
+                //Restore data
+                if (searchId != null)
+                    searchForIdTextBox.Text = searchId;
+
+                if (name != null)
+                {
+                    this.name = name;
+                    searchResultLabelTextBlock.Text = name + (semesterName != null ? " " + semesterName : "");
+                }
+                else
+                    throw new Exception("Name not cached");
+
+                if (semesters != null)
+                    semesterComboBox.ItemsSource = semesters;
+
+                if (courses != null)
+                    FillCoursesIntoGrid(courses);
+            }
+            catch (Exception e)
+            {
+                //Clear settings if parsing failed
+                localSettings.Values.Remove("searchId");
+                localSettings.Values.Remove("name");
+                localSettings.Values.Remove("semester");
+                localSettings.Values.Remove("semesters");
+                localSettings.Values.Remove("courses");
+
+                //Send GA Exception
+                App.Current.GATracker.SendException(e.Message, false);
+            }
+
+            searchAppBarToggleButton.IsChecked = courses == null || courses.Count == 0;
+        }
+
+        private void SaveToSettings(ApplicationDataContainer settings, string key, object value)
+        {
+            if (!settings.Values.ContainsKey(key))
+                settings.Values.Add(key, value);
             else
-                roamingSettings.Values[key] = value;
+                settings.Values[key] = value;
         }
 
         private async void semesterComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
@@ -294,36 +352,9 @@ namespace NTUTWin
             //Send GA View
             App.Current.GATracker.SendView("CurriculumPage");
 
-            if (roamingSettings.Values.ContainsKey("searchId"))
-                searchForIdTextBox.Text = roamingSettings.Values["searchId"].ToString();
-            else if (roamingSettings.Values.ContainsKey("id"))
-            {
-                searchForIdTextBox.Text = roamingSettings.Values["id"].ToString();
-#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
-                SearchForId(roamingSettings.Values["id"].ToString());
-            }
+            RestoreCachedData();
 
-            if (roamingSettings.Values.ContainsKey("name"))
-            {
-                name = roamingSettings.Values["name"].ToString();
-                if (roamingSettings.Values.ContainsKey("semester"))
-                    searchResultLabelTextBlock.Text = name + " " + JsonConvert.DeserializeObject<Semester>(roamingSettings.Values["semester"].ToString());
-                else
-                    searchResultLabelTextBlock.Text = name;
-            }
-
-            if (roamingSettings.Values.ContainsKey("semesters"))
-                semesterComboBox.ItemsSource = JsonConvert.DeserializeObject<List<Semester>>(roamingSettings.Values["semesters"].ToString());
-            semesterComboBox.Visibility = semesterComboBox.Items.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
-
-            if (roamingSettings.Values.ContainsKey("courses"))
-                FillCoursesIntoGrid(JsonConvert.DeserializeObject<List<Course>>(roamingSettings.Values["courses"].ToString()));
-
-            //if (!roamingSettings.Values.ContainsKey("JSESSIONID"))
-            //    Frame.Navigate(typeof(LoginPage));
-
-            searchAppBarToggleButton.IsChecked = !roamingSettings.Values.ContainsKey("courses");
-            searchAppBarToggleButton.Visibility = roamingSettings.Values.ContainsKey("courses") ? Visibility.Visible : Visibility.Collapsed;
+            
         }
 
         private void searchAppBarToggleButton_Checked(object sender, RoutedEventArgs e)
