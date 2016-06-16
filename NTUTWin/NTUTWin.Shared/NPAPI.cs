@@ -67,10 +67,10 @@ namespace NTUTWin
             public string Name { get; private set; }
         }
 
-        public class LoginExcpetion : Exception
+        public class NPException : Exception
         {
             public RequestResult.ErrorType ErrorType { get; private set; }
-            public LoginExcpetion(string message, RequestResult.ErrorType errorType):base(message)
+            public NPException(string message, RequestResult.ErrorType errorType):base(message)
             {
                 this.ErrorType = errorType;
             }
@@ -142,14 +142,14 @@ namespace NTUTWin
                 if (responseString.Contains("登入失敗"))
                 {
                     if (responseString.Contains("密碼錯誤"))
-                        throw new LoginExcpetion("帳號密碼錯誤", RequestResult.ErrorType.WrongIdPassword);
+                        throw new NPException("帳號密碼錯誤", RequestResult.ErrorType.WrongIdPassword);
                     else if (responseString.Contains("驗證碼"))
                         return await LoginNPortal(id, password); //Retry
                     else if (responseString.Contains("帳號已被鎖住"))
-                        throw new LoginExcpetion("嘗試錯誤太多次，帳號已被鎖定10分鐘", RequestResult.ErrorType.AccountLocked);
+                        throw new NPException("嘗試錯誤太多次，帳號已被鎖定10分鐘", RequestResult.ErrorType.AccountLocked);
                 }
                 else if (string.IsNullOrWhiteSpace(responseString))
-                    throw new LoginExcpetion("遇到不明的錯誤", RequestResult.ErrorType.Unknown);
+                    throw new NPException("遇到不明的錯誤", RequestResult.ErrorType.Unknown);
                 
 
                 //The folling 2 request will make the server allowing us to login sub-systems
@@ -168,7 +168,7 @@ namespace NTUTWin
 
                 return new RequestResult(true, RequestResult.ErrorType.None, "登入成功");
             }
-            catch (LoginExcpetion e)
+            catch (NPException e)
             {
                 return new RequestResult(false, e.ErrorType, e.Message);
             }
@@ -368,7 +368,7 @@ namespace NTUTWin
             }
         }
 
-#if DEBUG
+#if DEBUG && DEBUG_DOC
         public static async Task<RequestResult<MidAlerts>> DebugMidAlerts(int skip) {
             var url = "http://127.0.0.1/api/ntutwin/doc?url=http://aps-stu.ntut.edu.tw/StuQuery/QrySCWarn.jsp&limit=1&format=html&skip=" + skip;
                 var response = await Request(url, "GET");
@@ -376,7 +376,6 @@ namespace NTUTWin
                 response.Dispose();
 
                 var result = MidAlerts.Parse(responseString);
-                skip++;
 
                 return new RequestResult<MidAlerts>(true, RequestResult.ErrorType.None, null, result);
         }
@@ -416,7 +415,7 @@ namespace NTUTWin
             try
             {
                 var url = "http://aps-stu.ntut.edu.tw/StuQuery/QryScore.jsp";
-                var parameters = new Dictionary<string, object>() { {"format",-2 } };
+                var parameters = new Dictionary<string, object>() { { "format", -2 } };
                 var response = await Request(url, "POST", parameters);
                 string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync(), true);
                 response.Dispose();
@@ -438,14 +437,64 @@ namespace NTUTWin
             }
         }
 
+#if DEBUG && DEBUG_DOC
+        public static async Task<RequestResult<Credits>> DebugCredits(int skip)
+        {
+            var url = "http://127.0.0.1/api/ntutwin/doc?url=http://aps-stu.ntut.edu.tw/StuQuery/QryScore.jsp&limit=1&format=html&skip=" + skip;
+            var response = await Request(url, "GET");
+            string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync());
+            response.Dispose();
+
+            var result = MidAlerts.Parse(responseString);
+
+            try
+            {
+                var credits = await Credits.Parse(responseString);
+
+                return new RequestResult<Credits>(true, RequestResult.ErrorType.None, null, credits);
+            }
+            catch (Exception e)
+            {
+                return new RequestResult<Credits>(false, RequestResult.ErrorType.Unknown, e.Message, null);
+            }
+        }
+#endif
+
+        public static async Task<RequestResult<Credits>> GetCredits()
+        {
+            try
+            {
+                var url = "http://aps-stu.ntut.edu.tw/StuQuery/QryScore.jsp";
+                var parameters = new Dictionary<string, object>() { {"format",-2 } };
+                var response = await Request(url, "POST", parameters);
+                string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync(), true);
+                response.Dispose();
+
+                if (responseString.Contains("應用系統已中斷連線，請重新由入口網站主畫面左方的主選單，點選欲使用之系統!"))
+                    return new RequestResult<Credits>(false, RequestResult.ErrorType.Unauthorized, "連線逾時", null);
+
+                SendStat(url, "post", responseString, parameters);
+
+                var credits = await Credits.Parse(responseString);
+
+                return new RequestResult<Credits>(true, RequestResult.ErrorType.None, null, credits);
+            }
+            catch (NPException e)
+            {
+                return new RequestResult<Credits>(false, e.ErrorType, e.Message, null);
+            }
+            catch (HttpRequestException e)
+            {
+                return new RequestResult<Credits>(false, RequestResult.ErrorType.HttpError, e.Message, null);
+            }
+            catch (Exception e)
+            {
+                return new RequestResult<Credits>(false, RequestResult.ErrorType.Unknown, e.Message, null);
+            }
+        }
+
         public static async Task<RequestResult<CourseDetail>> GetCourseDetail(string courseId)
         {
-            //courseId = "217086";
-            //courseId = "217083";
-            //courseId = "193085";
-            //courseId = "209568";
-            //courseId = "220082";
-            //courseId = "209568";
             try
             {
                 var url = "http://aps.ntut.edu.tw/course/tw/Select.jsp";
