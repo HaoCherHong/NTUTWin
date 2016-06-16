@@ -370,7 +370,7 @@ namespace NTUTWin
 
 #if DEBUG
         public static async Task<RequestResult<MidAlerts>> DebugMidAlerts(int skip) {
-            var url = "https://lucher.club/api/ntutwin/doc?url=http://aps-stu.ntut.edu.tw/StuQuery/QrySCWarn.jsp&limit=1&format=html&skip=" + skip;
+            var url = "http://127.0.0.1/api/ntutwin/doc?url=http://aps-stu.ntut.edu.tw/StuQuery/QrySCWarn.jsp&limit=1&format=html&skip=" + skip;
                 var response = await Request(url, "GET");
                 string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync());
                 response.Dispose();
@@ -473,7 +473,59 @@ namespace NTUTWin
             }
         }
 
-        public static async Task<RequestResult> SendAttendenceAndRewardsStat()
+        public static async Task<RequestResult<AttendenceAndHonors>> GetAttendenceAndHonors()
+        {
+            try
+            {
+                var url = "http://aps-stu.ntut.edu.tw/StuQuery/QryAbsRew.jsp";
+                var parameters = new Dictionary<string, object>() { { "format", -2 } };
+                var response = await Request(url, "POST", parameters);
+                string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync(), true);
+                response.Dispose();
+
+                if (responseString.Contains("應用系統已中斷連線，請重新由入口網站主畫面左方的主選單，點選欲使用之系統!"))
+                    return new RequestResult<AttendenceAndHonors>(false, RequestResult.ErrorType.Unauthorized, "連線逾時", null);
+
+                var result = AttendenceAndHonors.Parse(responseString);
+
+                return new RequestResult<AttendenceAndHonors>(true, RequestResult.ErrorType.None, null, result);
+            }
+            catch (HttpRequestException e)
+            {
+                return new RequestResult<AttendenceAndHonors>(false, RequestResult.ErrorType.HttpError, e.Message, null);
+            }
+            catch (Exception e)
+            {
+                return new RequestResult<AttendenceAndHonors>(false, RequestResult.ErrorType.Unknown, e.Message, null);
+            }
+        }
+
+#if DEBUG
+        public static async Task<RequestResult<AttendenceAndHonors>> DebugAttendenceAndHonors(int skip)
+        {
+            try
+            {
+                var url = "http://127.0.0.1/api/ntutwin/doc?url=http://aps-stu.ntut.edu.tw/StuQuery/QryAbsRew.jsp&limit=1&format=html&skip=" + skip;
+                var response = await Request(url, "GET");
+                string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync());
+                response.Dispose();
+
+                var result = AttendenceAndHonors.Parse(responseString);
+
+                return new RequestResult<AttendenceAndHonors>(true, RequestResult.ErrorType.None, null, result);
+            }
+            catch (HttpRequestException e)
+            {
+                return new RequestResult<AttendenceAndHonors>(false, RequestResult.ErrorType.HttpError, e.Message, null);
+            }
+            catch (Exception e)
+            {
+                return new RequestResult<AttendenceAndHonors>(false, RequestResult.ErrorType.Unknown, e.Message, null);
+            }
+        }
+#endif
+
+        public static async Task<RequestResult> SendAttendenceAndHonorsStat()
         {
             try
             {

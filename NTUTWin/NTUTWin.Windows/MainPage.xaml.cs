@@ -65,6 +65,8 @@ namespace NTUTWin
                 listView.SelectedItem = ScheduleListViewItem;
             else if (e.SourcePageType == typeof(MidAlertPage))
                 listView.SelectedItem = MidAlertListViewItem;
+            else if(e.SourcePageType == typeof(AttendenceAndHonorsPage))
+                listView.SelectedItem = AttendenceAndHonorsListViewItem;
             else
                 listView.SelectedItem = null;
         }
@@ -142,7 +144,7 @@ namespace NTUTWin
 
         private async Task<bool> SendAttendenceAndRewardsStat()
         {
-            var result = await NPAPI.SendAttendenceAndRewardsStat();
+            var result = await NPAPI.SendAttendenceAndHonorsStat();
             if (result.Success)
                 return true;
             else
@@ -170,6 +172,8 @@ namespace NTUTWin
                 frame.Navigate(typeof(SchedulePage));
             else if (item == MidAlertListViewItem)
                 frame.Navigate(typeof(MidAlertPage));
+            else if (item == AttendenceAndHonorsListViewItem)
+                frame.Navigate(typeof(AttendenceAndHonorsPage));
         }
 
         private async void logoutButton_Click(object sender, RoutedEventArgs e)
