@@ -122,14 +122,19 @@ namespace NTUTWin
                     captchaText = await GetCaptchaText(captchaImage);
                 } while (string.IsNullOrEmpty(captchaText) || captchaText.Length != 4);
 
+                var BlowFish = new BlowFishCS.BlowFish(Encoding.UTF8.GetBytes(password));
+                var md5Code = BlowFish.Encrypt_ECB(id);
+
                 var response = await Request("https://nportal.ntut.edu.tw/login.do", "POST", new Dictionary<string, object>()
                 {
                     {"muid", id },
                     {"mpassword", password },
                     {"authcode", captchaText },
+                    {"md5Code", md5Code }
                 }, new Dictionary<string, object>()
                 {
-                    {"User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.112 Safari/537.36" }
+                    {"User-Agent", "Mozilla/5.0 (Windows NT 10.0; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/49.0.2623.112 Safari/537.36" },
+                    {"Referer", "https://nportal.ntut.edu.tw/index.do?thetime=" + TimeStamp }
                 });
                 string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync());
                 response.Dispose();

@@ -15,6 +15,7 @@
     <Compile Include="$(MSBuildThisFileDirectory)App.xaml.cs">
       <DependentUpon>App.xaml</DependentUpon>
     </Compile>
+    <Compile Include="$(MSBuildThisFileDirectory)BlowFishCS.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Course.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CourseDetail.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)MidAlerts.cs" />
