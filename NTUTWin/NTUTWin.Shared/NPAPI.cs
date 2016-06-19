@@ -148,12 +148,10 @@ namespace NTUTWin
                     else if (responseString.Contains("帳號已被鎖住"))
                         throw new NPException("嘗試錯誤太多次，帳號已被鎖定10分鐘", RequestResult.ErrorType.AccountLocked);
                 }
-                else if (string.IsNullOrWhiteSpace(responseString))
+                else if(!responseString.Contains("location.href = \"myPortal.do?thetime=\"+thetime+\"_\"+iconShow;"))
                     throw new NPException("遇到不明的錯誤", RequestResult.ErrorType.Unknown);
-                
 
                 //The folling 2 request will make the server allowing us to login sub-systems
-
                 response = await Request("http://nportal.ntut.edu.tw/myPortalHeader.do");
                 //responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync());
                 response.Dispose();

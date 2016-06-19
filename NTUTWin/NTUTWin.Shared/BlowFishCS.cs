@@ -342,28 +342,22 @@ namespace BlowFishCS
         /// <returns>(En/De)crypted data</returns>
         private byte[] Crypt_ECB(byte[] text, bool decrypt)
         {
-            int paddedLen = (text.Length % 8 == 0 ? text.Length : text.Length + 8 - (text.Length % 8));
-            
+            int padding = 8 - (text.Length & 7);
 
-            byte[] plainText = new byte[paddedLen];
+            byte[] plainText = new byte[text.Length + padding];
             Buffer.BlockCopy(text, 0, plainText, 0, text.Length);
-            if (text.Length % 8 != 0)
-            {
-                for (int i = text.Length; i < paddedLen; i++)
-                    plainText[i] = (byte)(8 - (text.Length & 7));
-            }
+            byte fill = (byte)(8 - (text.Length & 7));
+            for (int i = 0; i < padding; i++)
+                plainText[text.Length + i] = fill;
+
             byte[] block = new byte[8];
             for (int i = 0; i < plainText.Length; i += 8)
             {
                 Buffer.BlockCopy(plainText, i, block, 0, 8);
                 if (decrypt)
-                {
                     BlockDecrypt(ref block);
-                }
                 else
-                {
                     BlockEncrypt(ref block);
-                }
                 Buffer.BlockCopy(block, 0, plainText, i, 8);
             }
             return plainText;
