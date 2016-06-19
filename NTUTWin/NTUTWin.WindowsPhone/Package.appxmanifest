@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/2010/manifest" xmlns:m2="http://schemas.microsoft.com/appx/2013/manifest" xmlns:m3="http://schemas.microsoft.com/appx/2014/manifest" xmlns:mp="http://schemas.microsoft.com/appx/2014/phone/manifest">
-  <Identity Name="38760Hao-CherHong.24548C2F126FC" Publisher="CN=AE5BFBEA-FCC1-4B12-B68F-B944F93F60A7" Version="1.3.5.0" />
+  <Identity Name="38760Hao-CherHong.24548C2F126FC" Publisher="CN=AE5BFBEA-FCC1-4B12-B68F-B944F93F60A7" Version="1.3.6.0" />
   <mp:PhoneIdentity PhoneProductId="3ac8b303-6a86-4056-a645-2f4061fbca18" PhonePublisherId="00000000-0000-0000-0000-000000000000" />
   <Properties>
     <DisplayName>北科窗戶</DisplayName>
