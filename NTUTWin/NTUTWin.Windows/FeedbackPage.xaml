@@ -1,0 +1,20 @@
+﻿<Page
+    x:Class="NTUTWin.FeedbackPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:NTUTWin"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Loaded="Page_Loaded" >
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <StackPanel Orientation="Vertical" Margin="25" MaxWidth="1024" HorizontalAlignment="Left">
+            <TextBlock Text="意見與評分" FontSize="32" Margin="0,0,0,5"/>
+            <Image Source="Assets/Logo.png" Height="80" Margin="10" HorizontalAlignment="Left"/>
+            <TextBlock Foreground="White" FontSize="16" Text="感謝您的支持！若您有遇到任何問題，歡迎直接與作者聯絡。&#x0a;若您喜歡這個App，歡迎您到市集為我們評分！" />
+            <Button Name="contactButton" Content="聯絡作者" Margin="0,5,0,0"  Width="260" HorizontalAlignment="Left" Click="contactButton_Click"/>
+            <Button Name="rateAndReviewButton" Content="市集評分" Margin="0,5,0,0"  Width="260" HorizontalAlignment="Left" Click="rateAndReviewButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Page>

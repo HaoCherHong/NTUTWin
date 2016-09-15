@@ -99,15 +99,15 @@ namespace NTUTWin
             //Parse Summary
             var summaryRegex = new Regex("<th colspan=2 BGCOLOR=99FF99>[^<]+<td colspan=6 align=center>\n([^\n]+)", RegexOptions.Multiline | RegexOptions.IgnoreCase);
             var summaryMatches = summaryRegex.Matches(html);
-            semester.TotalAverage = float.Parse(summaryMatches[0].Groups[1].Value);
-            semester.ConductGrade = float.Parse(summaryMatches[1].Groups[1].Value);
-            semester.CreditsWanted = float.Parse(summaryMatches[2].Groups[1].Value);
-            semester.CreditsGot = float.Parse(summaryMatches[3].Groups[1].Value);
+            semester.TotalAverage = TryGetFloat(summaryMatches[0].Groups[1].Value, 0);
+            semester.ConductGrade = TryGetFloat(summaryMatches[1].Groups[1].Value, 0);
+            semester.CreditsWanted = TryGetFloat(summaryMatches[2].Groups[1].Value, 0);
+            semester.CreditsGot = TryGetFloat(summaryMatches[3].Groups[1].Value, 0);
 
             //Parse Credits
             var creditRegex = new Regex(
-                "<tr><th align=Right>([^\\s]+)\\s+" +
-                "<th>([^\\s]+)\\s+" + 
+                "<tr><th align=Right>([^\\s]*)\\s+" +
+                "<th>([^\\s]*)\\s+" + 
                 "<th align=left><a href=\"[^\"]+\">([^<]+)</a>\\s+" +
                 "<th align=center>([^\\s]+)\\s+" +
                 "<th align=center>([^\\s]+)\\s+" +
@@ -123,7 +123,7 @@ namespace NTUTWin
                 credit.CourseId = creditMatch.Groups[1].Value;
                 credit.Type = creditMatch.Groups[2].Value;
                 credit.Name = creditMatch.Groups[3].Value;
-                credit.Credits = float.Parse(creditMatch.Groups[6].Value);
+                credit.Credits = TryGetFloat(creditMatch.Groups[6].Value, 0);
                 credit.Grade = TryGetFloat(creditMatch.Groups[7].Value, 0f);
                 credit.Note = creditMatch.Groups[8].Value;
                 credit.Note = new Regex("<[^>]+>").Replace(credit.Note, " ").Trim();

@@ -222,18 +222,20 @@ namespace NTUTWin
             logoutButton.IsEnabled = true;
         }
 
-        private async void rateAndReviewButton_Click(object sender, RoutedEventArgs e)
+        private void rateAndReviewButton_Click(object sender, RoutedEventArgs e)
         {
-            await Windows.System.Launcher.LaunchUriAsync(new Uri("ms-windows-store:reviewapp?appid=5c805945-21cb-4160-9a45-1de3ec408a9d"));
-
-            //Send GA Event
-            App.Current.GATracker.SendEvent("Other", "Go Rating Page", null, 0);
+            frame.Navigate(typeof(FeedbackPage));
         }
 
         private void navigateBackButton_Click(object sender, RoutedEventArgs e)
         {
             if (frame.CanGoBack)
                 frame.GoBack();
+        }
+
+        private void donateButton_Click(object sender, RoutedEventArgs e)
+        {
+            frame.Navigate(typeof(DonatePage));
         }
     }
 }

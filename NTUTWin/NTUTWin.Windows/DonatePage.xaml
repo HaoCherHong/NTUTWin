@@ -1,0 +1,19 @@
+﻿<Page
+    x:Class="NTUTWin.DonatePage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:NTUTWin"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d"
+    Loaded="Page_Loaded" >
+
+    <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
+        <StackPanel Orientation="Vertical" Margin="25" MaxWidth="1024" HorizontalAlignment="Left">
+            <TextBlock Text="贊助" FontSize="32" Margin="0,0,0,5"/>
+            <Image Source="Assets/Logo.png" Height="80" Margin="10" HorizontalAlignment="Left"/>
+            <TextBlock Foreground="White" FontSize="16" Text="北科窗戶為北科學生為了方便同學快速查詢學校資訊系統而自行無償製作，&#x0a;儘管屢次遭到學校阻擋，依然花費了許多時間成本來開發，讓大家有個方便友善的介面可以使用。&#x0a;您的贊助與鼓勵是我繼續開發的動力。" />
+            <Button Name="donateButton" Content="贊助作者(PayPal)" Margin="0,5,0,0"  Width="260" HorizontalAlignment="Left" Click="donateButton_Click"/>
+        </StackPanel>
+    </Grid>
+</Page>
