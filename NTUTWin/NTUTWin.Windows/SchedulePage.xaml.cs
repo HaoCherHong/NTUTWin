@@ -46,8 +46,8 @@ namespace NTUTWin
             if(result.Success)
             {
                 schedule = result.Data;
-                calendar.DisplayDateStart = new DateTime(2016, 1, 1);
-                calendar.DisplayDateEnd = new DateTime(2016, 12, 31);
+                calendar.DisplayDateStart = new DateTime(2016, 8, 1);
+                calendar.DisplayDateEnd = new DateTime(2017, 7, 31);
                 calendar.SelectionMode = WinRTXamlToolkit.Controls.CalendarSelectionMode.SingleDate;
                 if (schedule.monthSchedules.ContainsKey(calendar.DisplayDate.Month))
                     listView.ItemsSource = schedule.monthSchedules[calendar.DisplayDate.Month];

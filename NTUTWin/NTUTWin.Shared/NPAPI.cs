@@ -282,7 +282,7 @@ namespace NTUTWin
                 if (responseString.Contains("《尚未登錄入口網站》 或 《應用系統連線已逾時》"))
                     return new GetSemestersResult(false, RequestResult.ErrorType.Unauthorized, "連線逾時", null, null);
 
-                SendStat(url, "post", responseString, parameters);
+                //SendStat(url, "post", responseString, parameters);
 
                 //Get semesters
                 var matches = Regex.Matches(responseString, "<a href=\"Select.jsp\\?format=-2&code=" + id + "&year=([0-9]+)&sem=([0-9]+)\">([^<]+)</a>");
@@ -329,7 +329,7 @@ namespace NTUTWin
                 if (responseString.Contains("《尚未登錄入口網站》 或 《應用系統連線已逾時》"))
                     return new RequestResult<List<Course>>(false, RequestResult.ErrorType.Unauthorized, "連線逾時", null);
 
-                SendStat(url, "get", responseString);
+                //SendStat(url, "get", responseString);
             
                 var courses = Course.ParseFromDocument(responseString);
                 return new RequestResult<List<Course>>(true, RequestResult.ErrorType.None, null, courses);
@@ -392,7 +392,7 @@ namespace NTUTWin
                 if (responseString.Contains("應用系統已中斷連線，請重新由入口網站主畫面左方的主選單，點選欲使用之系統!"))
                     return new RequestResult<MidAlerts>(false, RequestResult.ErrorType.Unauthorized, "連線逾時", null);
 
-                SendStat(url, "get", responseString);
+                //SendStat(url, "get", responseString);
 
                 var result = MidAlerts.Parse(responseString);
 
@@ -422,7 +422,7 @@ namespace NTUTWin
                 if (responseString.Contains("應用系統已中斷連線，請重新由入口網站主畫面左方的主選單，點選欲使用之系統!"))
                     return new RequestResult(false, RequestResult.ErrorType.Unauthorized, "連線逾時");
 
-                SendStat(url, "post", responseString, parameters);
+                //SendStat(url, "post", responseString, parameters);
 
                 return new RequestResult(true, RequestResult.ErrorType.None, null);
             }
@@ -472,7 +472,7 @@ namespace NTUTWin
                 if (responseString.Contains("應用系統已中斷連線，請重新由入口網站主畫面左方的主選單，點選欲使用之系統!"))
                     return new RequestResult<Credits>(false, RequestResult.ErrorType.Unauthorized, "連線逾時", null);
 
-                SendStat(url, "post", responseString, parameters);
+                //SendStat(url, "post", responseString, parameters);
 
                 var credits = await Credits.Parse(responseString);
 
@@ -586,7 +586,7 @@ namespace NTUTWin
                 if (responseString.Contains("應用系統已中斷連線，請重新由入口網站主畫面左方的主選單，點選欲使用之系統!"))
                     return new RequestResult(false, RequestResult.ErrorType.Unauthorized, "連線逾時");
 
-                SendStat(url, "post", responseString, parameters);
+                //SendStat(url, "post", responseString, parameters);
 
                 return new RequestResult(true, RequestResult.ErrorType.None, null);
             }
