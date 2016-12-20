@@ -100,15 +100,17 @@ namespace NTUTWin
                 TextBlock classTextBlock = new TextBlock();
                 TextBlock idTextBlock = new TextBlock();
                 TextBlock nameTextBlock = new TextBlock();
+                TextBlock englishNameTextBlock = new TextBlock();
                 TextBlock classStatusTextBlock = new TextBlock();
                 TextBlock schoolStatusTextBlock = new TextBlock();
                 Button searchButton = new Button();
-                classTextBlock.Margin = idTextBlock.Margin = nameTextBlock.Margin = classStatusTextBlock.Margin = schoolStatusTextBlock.Margin = margin;
-                classTextBlock.FontSize = idTextBlock.FontSize = nameTextBlock.FontSize = classStatusTextBlock.FontSize = schoolStatusTextBlock.FontSize = 15;
+                classTextBlock.Margin = idTextBlock.Margin = nameTextBlock.Margin = englishNameTextBlock.Margin = classStatusTextBlock.Margin = schoolStatusTextBlock.Margin = margin;
+                classTextBlock.FontSize = idTextBlock.FontSize = nameTextBlock.FontSize = englishNameTextBlock.FontSize = classStatusTextBlock.FontSize = schoolStatusTextBlock.FontSize = 15;
 
                 classTextBlock.Text = student.Class;
                 idTextBlock.Text = student.StudentId;
                 nameTextBlock.Text = student.Name;
+                englishNameTextBlock.Text = student.EnglishName;
                 classStatusTextBlock.Text = student.ClassStatus;
                 schoolStatusTextBlock.Text = student.SchoolStatus;
                 searchButton.Content = "查詢課表";
@@ -121,12 +123,14 @@ namespace NTUTWin
                 Grid.SetColumn(classTextBlock, 0);
                 Grid.SetColumn(idTextBlock, 1);
                 Grid.SetColumn(nameTextBlock, 2);
-                Grid.SetColumn(classStatusTextBlock, 3);
-                Grid.SetColumn(schoolStatusTextBlock, 4);
-                Grid.SetColumn(searchButton, 5);
+                Grid.SetColumn(englishNameTextBlock, 3);
+                Grid.SetColumn(classStatusTextBlock, 4);
+                Grid.SetColumn(schoolStatusTextBlock, 5);
+                Grid.SetColumn(searchButton, 6);
                 Grid.SetRow(classTextBlock, i);
                 Grid.SetRow(idTextBlock, i);
                 Grid.SetRow(nameTextBlock, i);
+                Grid.SetRow(englishNameTextBlock, i);
                 Grid.SetRow(classStatusTextBlock, i);
                 Grid.SetRow(schoolStatusTextBlock, i);
                 Grid.SetRow(searchButton, i);
@@ -134,6 +138,7 @@ namespace NTUTWin
                 studentsGrid.Children.Add(classTextBlock);
                 studentsGrid.Children.Add(idTextBlock);
                 studentsGrid.Children.Add(nameTextBlock);
+                studentsGrid.Children.Add(englishNameTextBlock);
                 studentsGrid.Children.Add(classStatusTextBlock);
                 studentsGrid.Children.Add(schoolStatusTextBlock);
                 studentsGrid.Children.Add(searchButton);

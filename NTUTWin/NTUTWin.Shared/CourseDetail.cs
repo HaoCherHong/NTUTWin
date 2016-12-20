@@ -13,6 +13,7 @@ namespace NTUTWin
             public string Class { get; set; }
             public string StudentId { get; set; }
             public string Name { get; set; }
+            public string EnglishName { get; set; }
             public string ClassStatus { get; set; }
             public string SchoolStatus { get; set; }
         }
@@ -116,7 +117,7 @@ namespace NTUTWin
             detail.Pratice = match.Groups[13].Value == "是";
             detail.Note = match.Groups[14].Value;
 
-            var studentsRegex = new Regex("^<tr><td>([^\\s]*)\\s*<td><a href=\"[^\"]+\">([^<]*)</a><td>([^<]*)<td><div align=center>([^<]*)</div><td(?: bgcolor=#ffcccc)?>([^\\s]*)", RegexOptions.Multiline | RegexOptions.IgnoreCase);
+            var studentsRegex = new Regex("^<tr><td>([^\\s]*)\\s*<td><a href=\"[^\"]+\">([^<]*)</a><td>([^<]*)<td>\\s*([^<]+)<td><div align=center>([^<]*)</div><td(?: bgcolor=#ffcccc)?>([^\\s]*)", RegexOptions.Multiline | RegexOptions.IgnoreCase);
             var studentsMatches = studentsRegex.Matches(html);
             foreach(Match studentMatch in studentsMatches)
             {
@@ -124,8 +125,9 @@ namespace NTUTWin
                 student.Class = studentMatch.Groups[1].Value;
                 student.StudentId = studentMatch.Groups[2].Value;
                 student.Name = studentMatch.Groups[3].Value;
-                student.ClassStatus = studentMatch.Groups[4].Value;
-                student.SchoolStatus = studentMatch.Groups[5].Value;
+                student.EnglishName = studentMatch.Groups[4].Value;
+                student.ClassStatus = studentMatch.Groups[5].Value;
+                student.SchoolStatus = studentMatch.Groups[6].Value;
                 detail.Students.Add(student);
             }
             return detail;
