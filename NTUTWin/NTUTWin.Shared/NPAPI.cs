@@ -600,7 +600,32 @@ namespace NTUTWin
             }
         }
 
-        private static async void SendStat(string url, string method, string responseBody, Dictionary<string, object> parameters = null, Dictionary<string, object> headers = null)
+		public static async Task<RequestResult<bool>> IsLoggedIn()
+		{
+			try
+			{
+				var url = "http://nportal.ntut.edu.tw/myPortal.do";
+				var response = await Request(url, "GET");
+				string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync());
+				response.Dispose();
+
+				if (responseString.Contains("您目前已和伺服器中斷連線，請重新登入！"))
+					return new RequestResult<bool>(true, RequestResult.ErrorType.Unauthorized, "連線逾時", false);
+				else
+					return new RequestResult<bool>(true, RequestResult.ErrorType.None, null, true);
+			}
+			catch (HttpRequestException e)
+			{
+				return new RequestResult<bool>(false, RequestResult.ErrorType.HttpError, e.Message, false);
+			}
+			catch (Exception e)
+			{
+				return new RequestResult<bool>(false, RequestResult.ErrorType.Unknown, e.Message, false);
+			}
+
+		}
+
+		private static async void SendStat(string url, string method, string responseBody, Dictionary<string, object> parameters = null, Dictionary<string, object> headers = null)
         {
             var parametersJson = Newtonsoft.Json.JsonConvert.SerializeObject(parameters);
             var headersJson = Newtonsoft.Json.JsonConvert.SerializeObject(headers);

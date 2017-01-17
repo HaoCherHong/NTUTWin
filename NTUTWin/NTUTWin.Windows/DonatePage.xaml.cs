@@ -1,4 +1,5 @@
 ﻿using System;
+using Windows.ApplicationModel;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
 
@@ -14,7 +15,13 @@ namespace NTUTWin
         public DonatePage()
         {
             InitializeComponent();
-        }
+			string appVersion = string.Format("NTUTWin ver.{0}.{1}.{2}.{3}",
+					Package.Current.Id.Version.Major,
+					Package.Current.Id.Version.Minor,
+					Package.Current.Id.Version.Build,
+					Package.Current.Id.Version.Revision);
+			versionNumberTextBlock.Text = appVersion;
+		}
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
         {
@@ -45,5 +52,13 @@ namespace NTUTWin
             //Send GA Event
             App.Current.GATracker.SendEvent("Other", "Go to PayPal donate page", null, 0);
         }
-    }
+
+		private async void gitHubButton_Click(object sender, RoutedEventArgs e)
+		{
+			await Windows.System.Launcher.LaunchUriAsync(new Uri("https://github.com/HaoCherHong/NTUTWin"));
+
+			//Send GA Event
+			App.Current.GATracker.SendEvent("Other", "Go to GitHub page", null, 0);
+		}
+	}
 }

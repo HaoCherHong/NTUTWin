@@ -74,6 +74,8 @@ namespace NTUTWin
                 listView.SelectedItem = AttendenceAndHonorsListViewItem;
             else if (e.SourcePageType == typeof(CreditsPage))
                 listView.SelectedItem = CreditsListViewItem;
+			else if(e.SourcePageType == typeof(PortalPage))
+				listView.SelectedItem = PortalListViewItem;
             else
                 listView.SelectedItem = null;
             listView.SelectionChanged += ListView_SelectionChanged;
@@ -198,8 +200,10 @@ namespace NTUTWin
                 frame.Navigate(typeof(AttendenceAndHonorsPage));
             else if (item == CreditsListViewItem)
                 frame.Navigate(typeof(CreditsPage));
+			else if (item == PortalListViewItem)
+				frame.Navigate(typeof(PortalPage));
 
-            frame.BackStack.Clear();
+			frame.BackStack.Clear();
             navigateBackButton.Visibility = Visibility.Collapsed;
         }
 
