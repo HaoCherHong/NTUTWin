@@ -82,5 +82,9 @@
         <Button Name="goBackButton" Content="〈" IsEnabled="{Binding CanGoBack, ElementName=webView, Mode=OneWay}" Click="Button_Click" Style="{StaticResource ButtonStyle1}"/>
         <Button Name="goForwardButton" Content="〉" HorizontalAlignment="Right" IsEnabled="{Binding CanGoForward, ElementName=webView, Mode=OneWay}" Click="Button_Click" Style="{StaticResource ButtonStyle1}"/>
         <Button Name="homeButton" Content="⌂" HorizontalAlignment="Center"  VerticalAlignment="Bottom" Click="Button_Click" Style="{StaticResource ButtonStyle1}"/>
+        <StackPanel Name="progressStackPanel" Orientation="Horizontal" HorizontalAlignment="Center" VerticalAlignment="Center">
+            <ProgressRing Name="progressRing" Width="50" Height="50" IsActive="True" Foreground="Gray" Margin="0,0,10,0"/>
+            <TextBlock Name="progressTextBlock" Text="載入中" VerticalAlignment="Center" FontSize="25" Foreground="Gray"/>
+        </StackPanel>
     </Grid>
 </Page>

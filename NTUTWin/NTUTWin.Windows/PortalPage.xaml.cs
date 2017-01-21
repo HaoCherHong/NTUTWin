@@ -1,19 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
 using Windows.Storage;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 using Windows.Web.Http;
 using Windows.Web.Http.Filters;
 
@@ -32,6 +21,34 @@ namespace NTUTWin
 		{
 			this.InitializeComponent();
 			webView.FrameDOMContentLoaded += WebView_FrameDOMContentLoaded;
+			webView.NavigationStarting += WebView_NavigationStarting;
+			webView.FrameNavigationCompleted += WebView_FrameNavigationCompleted;
+		}
+
+		private void WebView_FrameNavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
+		{
+			//Hide progress indicator
+			progressStackPanel.Visibility = Visibility.Collapsed;
+		}
+
+		private async void WebView_NavigationStarting(WebView sender, WebViewNavigationStartingEventArgs args)
+		{
+			if (args.Uri.LocalPath == "/logout.do")
+			{
+				//Prevent from being logged out
+				args.Cancel = true;
+
+				//Send GA Event
+				App.Current.GATracker.SendEvent("Portal", "Attempted to log out", null, 0);
+			}
+			else if (args.Uri.LocalPath == "/index.do")
+			{
+				//If logged out, login automatically
+				await Login();
+
+				//Send GA Event
+				App.Current.GATracker.SendEvent("Portal", "Been logged out, re-login", null, 0);
+			}
 		}
 
 		private async void WebView_FrameDOMContentLoaded(WebView sender, WebViewDOMContentLoadedEventArgs args)
@@ -94,11 +111,21 @@ namespace NTUTWin
 
 		private async void Page_Loaded(object sender, RoutedEventArgs e)
 		{
+			//Send GA View
+			App.Current.GATracker.SendView("PortalPage");
+
+			//Start login process
 			await Login();
 		}
 
 		async private Task Login()
 		{
+			//Set progress
+			progressStackPanel.Visibility = Visibility.Visible;
+			progressRing.IsActive = true;
+			progressTextBlock.Text = "檢查登入狀態";
+
+			//Check is logged in
 			var result = await NPAPI.IsLoggedIn();
 			if (result.Success)
 			{
@@ -106,14 +133,40 @@ namespace NTUTWin
 				bool isLoggedIn = result.Data;
 
 				if (!isLoggedIn)
-					await NPAPI.BackgroundLogin();
+				{
+					//Not logged in, login now
+					progressTextBlock.Text = "登入中";
 
+					var loginResult = await NPAPI.BackgroundLogin();
+					if (!loginResult.Success)
+					{
+						//Failed
+						if (loginResult.Error == NPAPI.RequestResult.ErrorType.Unauthorized)
+						{
+							//Not logged in, navagate to login page
+							Frame.Navigate(typeof(LoginPage));
+							return;
+						}
+						else
+						{
+							//Unexpected error occured, show error message
+							progressRing.IsActive = false;
+							progressTextBlock.Text = loginResult.Message;
+							return;
+						}
+					}
+				}
 				
+				//Set global cookie to current saved JSESSIONID
 				HttpBaseProtocolFilter filter = new HttpBaseProtocolFilter();
 				HttpCookie cookie = new HttpCookie("JSESSIONID", baseUri.Host, "/");
 				cookie.Value = roamingSettings.Values["JSESSIONID"].ToString();
 				filter.CookieManager.SetCookie(cookie, false);
 
+				//Set progress
+				progressTextBlock.Text = "載入中";
+
+				//
 				GoHome();
 			}
 			else
@@ -133,6 +186,8 @@ namespace NTUTWin
 				else
 				{
 					//Show message
+					progressRing.IsActive = false;
+					progressTextBlock.Text = result.Message;
 				}
 			}
 		}
