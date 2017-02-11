@@ -1,10 +1,11 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace NTUTWin
 {
-    class Credits
+	class Credits
     {
         public class Credit
         {
@@ -54,38 +55,40 @@ namespace NTUTWin
                 semesters.Add(ParseTable(match));
             credits.Semesters = semesters;
 
-            //Summary & Get all course details
-            foreach (Semester semester in semesters)
-            {
-                foreach (Credit credit in semester.Credits)
-                {
-                    var detailResult = await NPAPI.GetCourseDetail(credit.CourseId);
-                    if (detailResult.Success)
-                    {
-                        //Set course detail
-                        credit.Detail = detailResult.Data;
 
-                        //Sum credits for each detailed type
-                        if(credit.Grade >= 60)
-                            if (credits.TotalDetailTypeCredits.ContainsKey(credit.Detail.Type))
-                                credits.TotalDetailTypeCredits[credit.Detail.Type] += credit.Credits;
-                            else
-                                credits.TotalDetailTypeCredits.Add(credit.Detail.Type, credit.Credits);
-                    }
-                    else
-                        throw new NPAPI.NPException(detailResult.Message, NPAPI.RequestResult.ErrorType.Unauthorized);
+			var tasks = new List<Task>();
+			foreach (Semester semester in semesters)
+			{
+				tasks.AddRange(semester.Credits.Select(async credit =>
+				{
+					var detailResult = await NPAPI.GetCourseDetail(credit.CourseId);
+					if (!detailResult.Success)
+						throw new NPAPI.NPException(detailResult.Message, NPAPI.RequestResult.ErrorType.Unauthorized);
 
-                    //Sum credits for each type
-                    if (credit.Grade >= 60)
-                        if (credits.TotalTypeCredits.ContainsKey(credit.Type))
-                            credits.TotalTypeCredits[credit.Type] += credit.Credits;
-                        else
-                            credits.TotalTypeCredits.Add(credit.Type, credit.Credits);
-                }
+					//Set course detail
+					credit.Detail = detailResult.Data;
 
-                //Sum semester credits
-                credits.TotalCreditsGot += semester.CreditsGot;
-            }
+					//Sum credits for each detailed type
+					if (credit.Grade >= 60)
+						if (credits.TotalDetailTypeCredits.ContainsKey(credit.Detail.Type))
+							credits.TotalDetailTypeCredits[credit.Detail.Type] += credit.Credits;
+						else
+							credits.TotalDetailTypeCredits.Add(credit.Detail.Type, credit.Credits);
+
+					//Sum credits for each type
+					if (credit.Grade >= 60)
+						if (credits.TotalTypeCredits.ContainsKey(credit.Type))
+							credits.TotalTypeCredits[credit.Type] += credit.Credits;
+						else
+							credits.TotalTypeCredits.Add(credit.Type, credit.Credits);
+
+					//Sum semester credits
+					credits.TotalCreditsGot += semester.CreditsGot;
+				}));
+			}
+
+			//Run all tasks in parallel
+			await Task.WhenAll(tasks.ToArray());
 
             return credits;
         }
