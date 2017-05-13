@@ -63,7 +63,7 @@ namespace NTUTWin
 				{
 					var detailResult = await NPAPI.GetCourseDetail(credit.CourseId);
 					if (!detailResult.Success)
-						throw new NPAPI.NPException(detailResult.Message, NPAPI.RequestResult.ErrorType.Unauthorized);
+						throw new NPAPI.NPException(detailResult.Message, detailResult.Error);
 
 					//Set course detail
 					credit.Detail = detailResult.Data;

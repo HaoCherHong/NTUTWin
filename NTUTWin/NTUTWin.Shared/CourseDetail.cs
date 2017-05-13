@@ -54,7 +54,7 @@ namespace NTUTWin
 				"<tr><th>類　　別<td>([^<]*)</tr>\n" +
 				"<tr><th>授課教師\n" +
 				"<td>(?:<a href=\"Teach.jsp[^\"]+\">(?<teachers>[^<]*)</a>(?:<br>)?\\s*\n*)*\\s*\n*" +
-				"<A href=\"[^\"]+\">《查詢教學大綱與進度表》</A><BR>\n+" +
+				"(?:<A href=\"[^\"]+\">《查詢教學大綱與進度表》</A><BR>\n+)?" +
 				"<tr><th>開課班級\n" +
 				"<td>(?:<a href=\"[^\"]+\">(?<classes>[^<]*)</a><br>\n)*\\s?\n" +
 				"<tr><th>教　　室\n" +
