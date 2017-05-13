@@ -68,22 +68,23 @@ namespace NTUTWin
 					//Set course detail
 					credit.Detail = detailResult.Data;
 
-					//Sum credits for each detailed type
 					if (credit.Grade >= 60)
+					{
+						//Sum credits for each detailed type
 						if (credits.TotalDetailTypeCredits.ContainsKey(credit.Detail.Type))
 							credits.TotalDetailTypeCredits[credit.Detail.Type] += credit.Credits;
 						else
 							credits.TotalDetailTypeCredits.Add(credit.Detail.Type, credit.Credits);
 
-					//Sum credits for each type
-					if (credit.Grade >= 60)
+						//Sum credits for each type
 						if (credits.TotalTypeCredits.ContainsKey(credit.Type))
 							credits.TotalTypeCredits[credit.Type] += credit.Credits;
 						else
 							credits.TotalTypeCredits.Add(credit.Type, credit.Credits);
 
-					//Sum semester credits
-					credits.TotalCreditsGot += semester.CreditsGot;
+						//Sum semester credits
+						credits.TotalCreditsGot += credit.Credits;
+					}
 				}));
 			}
 
