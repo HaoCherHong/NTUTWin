@@ -26,6 +26,7 @@ namespace NTUTWin
         public static Schedule Parse(string data)
         {
             Schedule schedule = new Schedule();
+            int academicYear = ParseAcademicYear(data);
             var regex = new Regex("valign=\"top\"[^>]*><p>((?:(?!<\\/p>).)+)", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Multiline);
             var matches = regex.Matches(data);
             var eventRegex = new Regex("(?:<br \\/>)?\\s*\\(?([^\\)]+)\\)((?:(?!<br \\/>|\\(\\d).)+)", RegexOptions.IgnoreCase | RegexOptions.Singleline | RegexOptions.Multiline);
@@ -43,7 +44,8 @@ namespace NTUTWin
                     var dateMatch = dateRegex.Match(schoolEvent.timeString);
                     int month = int.Parse(dateMatch.Groups[1].Value);
                     int day = int.Parse(dateMatch.Groups[2].Value);
-                    schoolEvent.date = new DateTime(DateTime.Now.Year, month, day);
+                    int year = (month > 7 ? academicYear : academicYear + 1) + 1911;
+                    schoolEvent.date = new DateTime(year, month, day);
                     
                     //Insert into event list
                     schedule.events.Add(schoolEvent);
@@ -55,6 +57,13 @@ namespace NTUTWin
                 }
             }
             return schedule;
+        }
+
+        private static int ParseAcademicYear(string data)
+        {
+            var regex = new Regex("國立臺北科技大學([0-9]+)學年度第");
+            var match = regex.Match(data);
+            return int.Parse(match.Groups[1].Value);
         }
     }
 }

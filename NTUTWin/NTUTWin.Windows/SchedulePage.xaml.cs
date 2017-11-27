@@ -23,10 +23,48 @@ namespace NTUTWin
     /// </summary>
     public sealed partial class SchedulePage : Page
     {
+        int CurrentAcademicYear {
+            get
+            {
+                return currentAcademicYear;
+            }
+            set
+            {
+                currentAcademicYear = value;
+                OnAcademicYearChanged?.Invoke(this, null);
+            }
+        }
+
+        event EventHandler OnAcademicYearChanged; 
+
+        const int MinAcademicYear = 100;
+        int currentAcademicYear;
+        int maxAcademicYear;
+
         Schedule schedule;
+
         public SchedulePage()
         {
             this.InitializeComponent();
+
+            var today = DateTime.Today;
+
+            if(today.Month > 7)
+                maxAcademicYear = today.Year - 1911;
+            else
+                maxAcademicYear = today.Year - 1 - 1911;
+
+            OnAcademicYearChanged += SchedulePage_OnAcademicYearChanged;
+        }
+
+        private void SchedulePage_OnAcademicYearChanged(object sender, EventArgs e)
+        {
+            nextYearButton.IsEnabled = currentAcademicYear < maxAcademicYear;
+            previousYearButton.IsEnabled = currentAcademicYear > MinAcademicYear;
+            titleTextBlock.Text = string.Format("{0}學年度行事曆", currentAcademicYear);
+            previousYearButton.Content = string.Format("{0}學年", currentAcademicYear - 1);
+            nextYearButton.Content = string.Format("{0}學年", currentAcademicYear + 1);
+            GetSchedule(currentAcademicYear);
         }
 
         private void Page_Loaded(object sender, RoutedEventArgs e)
@@ -37,17 +75,17 @@ namespace NTUTWin
             //Send GA Event
             App.Current.GATracker.SendEvent("Schedule", "Get Schedule", null, 0);
 
-            GetSchedule();
+            CurrentAcademicYear = maxAcademicYear;
         }
 
-        private async void GetSchedule()
+        private async void GetSchedule(int academicYear)
         {
-            var result = await NPAPI.GetSchedule();
+            var result = await NPAPI.GetSchedule(academicYear);
             if(result.Success)
             {
                 schedule = result.Data;
-                calendar.DisplayDateStart = new DateTime(2016, 8, 1);
-                calendar.DisplayDateEnd = new DateTime(2017, 7, 31);
+                calendar.DisplayDateStart = new DateTime(academicYear + 1911, 8, 1);
+                calendar.DisplayDateEnd = new DateTime(academicYear + 1 + 1911, 7, 31);
                 calendar.SelectionMode = WinRTXamlToolkit.Controls.CalendarSelectionMode.SingleDate;
                 if (schedule.monthSchedules.ContainsKey(calendar.DisplayDate.Month))
                     listView.ItemsSource = schedule.monthSchedules[calendar.DisplayDate.Month];
@@ -59,6 +97,7 @@ namespace NTUTWin
             }
             else
             {
+                listView.ItemsSource = null;
                 listView.Items.Clear();
                 listView.Items.Add("讀取失敗，請稍後再試。");
                 listView.Items.Add(result.Message);
@@ -102,6 +141,16 @@ namespace NTUTWin
                 calendar.SelectedDate = schoolEvent.date;
                 detailsTextBlock.Text = string.Format("時間：{0}\n{1}", schoolEvent.timeString, schoolEvent.description);
             }
+        }
+
+        private void previousYearButton_Click(object sender, RoutedEventArgs e)
+        {
+            CurrentAcademicYear--;
+        }
+
+        private void nextYearButton_Click(object sender, RoutedEventArgs e)
+        {
+            CurrentAcademicYear++;
         }
     }
 }

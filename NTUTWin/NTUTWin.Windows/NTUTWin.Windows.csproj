@@ -18,7 +18,7 @@
     <PackageCertificateKeyFile>NTUTWin.Windows_StoreKey.pfx</PackageCertificateKeyFile>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
-    <PackageCertificateThumbprint>41D497ED0529CFE7A4C28DB676F9E1146F98EF6E</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>EF619F498CC8A9E31D6B2EFA4D5557627AA635CC</PackageCertificateThumbprint>
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
     <AppxBundlePlatforms>x86|x64|arm</AppxBundlePlatforms>
     <AppxBundle>Always</AppxBundle>

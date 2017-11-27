@@ -344,12 +344,11 @@ namespace NTUTWin
             }
         }
 
-        public static async Task<RequestResult<Schedule>> GetSchedule()
+        public static async Task<RequestResult<Schedule>> GetSchedule(int academicYear)
         {
             try
             {
-                //var response = await Request("http://www.cc.ntut.edu.tw/~wwwoaa/oaa-nwww/oaa-cal/oaa-cal_104.html", "GET");
-                var response = await Request("http://www.cc.ntut.edu.tw/~wwwoaa/oaa-nwww/oaa-cal/oaa-cal_105.html", "GET");
+                var response = await Request(string.Format("http://www.cc.ntut.edu.tw/~wwwoaa/oaa-nwww/oaa-cal/oaa-cal_{0}.html", academicYear), "GET");
                 string responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync(), false);
                 response.Dispose();
 
