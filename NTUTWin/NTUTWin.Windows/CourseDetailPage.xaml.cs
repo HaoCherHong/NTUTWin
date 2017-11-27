@@ -82,14 +82,15 @@ namespace NTUTWin
                 "課號:\t\t{0}\n" +
                 "名稱:\t\t{1}\n" +
                 "學分:\t\t{2}\n" +
-                "類型:\t\t{3}\n" +
-                "授課教師:\t{4}\n" +
-                "開課班級:\t{5}\n" +
-                "上課教室:\t{6}\n" +
-                "修課人數:\t{7}\n" +
-                "徹選人數:\t{8}\n\n" +
-                "{9}",
-                detail.CourseId, detail.Name, detail.Credits, detail.Type, teachersText, classesText, classRoomsText, detail.PeopleCount, detail.QuitPeopleCount, detail.Note);
+                "時數:\t\t{3}\n" +
+                "類型:\t\t{4}\n" +
+                "授課教師:\t{5}\n" +
+                "開課班級:\t{6}\n" +
+                "上課教室:\t{7}\n" +
+                "修課人數:\t{8}\n" +
+                "徹選人數:\t{9}\n\n" +
+                "{10}",
+                detail.CourseId, detail.Name, detail.Credits, detail.Hours, detail.Type, teachersText, classesText, classRoomsText, detail.PeopleCount, detail.QuitPeopleCount, detail.Note);
 
             detailTextBlock.Text = detailText;
 

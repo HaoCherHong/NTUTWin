@@ -15,7 +15,8 @@
         <ScrollViewer VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto" Grid.Row="0">
             <StackPanel Orientation="Vertical" HorizontalAlignment="Left" Margin="20">
                 <StackPanel Orientation="Horizontal" Margin="0,0,0,10">
-                    <TextBlock x:Name="searchResultLabelTextBlock" Text="學期" FontSize="32" Margin="0,0,10,0"/>
+                    <TextBlock x:Name="searchResultLabelTextBlock" Text="學期" FontSize="32" Margin="0,0,10,0" VerticalAlignment="Center"/>
+                    <TextBlock x:Name="summaryTextBlock" Text="學分" FontSize="16" Foreground="LightGray" Margin="0,0,10,5" VerticalAlignment="Bottom" />
                 </StackPanel>
                 <Grid Name="scheduleGrid" Height="Auto" HorizontalAlignment="Stretch" Margin="0, 0, 0, 10">
                     <Grid.ColumnDefinitions>

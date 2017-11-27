@@ -76,8 +76,8 @@ namespace NTUTWin
             detail.Semester = int.Parse(match.Groups[3].Value);
             detail.Name = match.Groups[4].Value;
             detail.Phase = int.Parse(match.Groups[5].Value);
-            detail.Hours = float.Parse(match.Groups[6].Value);
-            detail.Credits = float.Parse(match.Groups[7].Value);
+            detail.Credits = float.Parse(match.Groups[6].Value);
+            detail.Hours = float.Parse(match.Groups[7].Value);
             detail.Type = match.Groups[8].Value;
 
             switch (detail.Type)

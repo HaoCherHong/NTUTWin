@@ -39,6 +39,81 @@ namespace NTUTWin
             //roamingSettings.Values.Remove("JSESSIONID");
         }
 
+        private void Page_Loaded(object sender, RoutedEventArgs e)
+        {
+            //Send GA View
+            App.Current.GATracker.SendView("CurriculumPage");
+        }
+
+        protected override async void OnNavigatedTo(NavigationEventArgs e)
+        {
+            if (e.Parameter != null)
+            {
+                //Search by navigation parameter
+                var searchId = e.Parameter as string;
+                searchForIdTextBox.Text = searchId;
+                await SearchForId(searchId);
+            }
+            else
+            {
+                //Restore cached data
+                //Cache all variables needed, restore them if no exception occured
+                try
+                {
+                    string searchId = null, name = null, semesterName = null;
+                    List<Semester> semesters = null;
+                    List<Course> courses = null;
+
+                    if (localSettings.Values.ContainsKey("searchId"))
+                        searchId = localSettings.Values["searchId"].ToString();
+                    else if (roamingSettings.Values.ContainsKey("id"))
+                        searchId = roamingSettings.Values["id"].ToString();
+
+                    if (localSettings.Values.ContainsKey("name"))
+                        name = localSettings.Values["name"].ToString();
+
+                    if (localSettings.Values.ContainsKey("semester"))
+                        semesterName = JsonConvert.DeserializeObject<Semester>(localSettings.Values["semester"] as string).ToString();
+
+                    if (localSettings.Values.ContainsKey("semesters"))
+                        semesters = JsonConvert.DeserializeObject<List<Semester>>(localSettings.Values["semesters"].ToString());
+
+                    if (localSettings.Values.ContainsKey("courses"))
+                        courses = JsonConvert.DeserializeObject<List<Course>>(localSettings.Values["courses"].ToString());
+
+                    //Restore data
+                    if (searchId != null)
+                        searchForIdTextBox.Text = searchId;
+
+                    if (name != null)
+                    {
+                        this.name = name;
+                        searchResultLabelTextBlock.Text = name + (semesterName != null ? " " + semesterName : "");
+                    }
+                    else
+                        throw new Exception("Name not cached");
+
+                    if (semesters != null)
+                        semesterComboBox.ItemsSource = semesters;
+
+                    if (courses != null)
+                        FillCoursesIntoGrid(courses);
+                }
+                catch (Exception exception)
+                {
+                    //Clear settings if parsing failed
+                    localSettings.Values.Remove("searchId");
+                    localSettings.Values.Remove("name");
+                    localSettings.Values.Remove("semester");
+                    localSettings.Values.Remove("semesters");
+                    localSettings.Values.Remove("courses");
+
+                    //Send GA Exception
+                    App.Current.GATracker.SendException(exception.Message, false);
+                }
+            }
+        }
+
         private async Task GetSchedule(Semester semester)
         {
             var coursesRequest = await NPAPI.GetCourses(searchForIdTextBox.Text, semester.Year, semester.SemesterNumber);
@@ -89,6 +164,16 @@ namespace NTUTWin
             scheduleGrid.Children.Clear();
             scheduleGrid.RowDefinitions.Clear();
             unscheduledCoursesGrid.Items.Clear();
+
+            //Summary
+            float hours = 0;
+            float credits = 0;
+            foreach(var course in courses)
+            {
+                hours += course.Hours;
+                credits += course.Credit;
+            }
+            summaryTextBlock.Text = string.Format("學分: {0} 時數: {1}", credits, hours);
 
             //Prepare scheduleGrid header columns
             var dayChars = "一二三四五六日";
@@ -188,17 +273,19 @@ namespace NTUTWin
                     content += "\n";
                 }
 
+                string timeString = Course.GetTimeString(time);
+
+                if (timeString != null)
+                    content += timeString + "\n";
+
+                content += string.Format("學分: {0} 時數: {1}\n", course.Credit, course.Hours);
+
                 if (course.Teachers.Count > 0)
                 {
                     foreach (string teacher in course.Teachers)
                         content += teacher + " ";
                     content += "\n";
                 }
-
-                string timeString = Course.GetTimeString(time);
-
-                if (timeString != null)
-                    content += timeString + "\n";
 
                 if (!string.IsNullOrWhiteSpace(course.Note))
                     content += course.Note;
@@ -323,81 +410,6 @@ namespace NTUTWin
                 await GetSchedule(semesterComboBox.SelectedItem as Semester);
                 //Enable user input
                 searchForIdTextBox.IsEnabled = searchSelfButton.IsEnabled = semesterComboBox.IsEnabled = getSemestersButton.IsEnabled = true;
-            }
-        }
-
-        private void Page_Loaded(object sender, RoutedEventArgs e)
-        {
-            //Send GA View
-            App.Current.GATracker.SendView("CurriculumPage");
-        }
-
-        protected override async void OnNavigatedTo(NavigationEventArgs e)
-        {
-            if (e.Parameter != null)
-            {
-                //Search by navigation parameter
-                var searchId = e.Parameter as string;
-                searchForIdTextBox.Text = searchId;
-                await SearchForId(searchId);
-            }
-            else
-            {
-                //Restore cached data
-                //Cache all variables needed, restore them if no exception occured
-                try
-                {
-                    string searchId = null, name = null, semesterName = null;
-                    List<Semester> semesters = null;
-                    List<Course> courses = null;
-
-                    if (localSettings.Values.ContainsKey("searchId"))
-                        searchId = localSettings.Values["searchId"].ToString();
-                    else if (roamingSettings.Values.ContainsKey("id"))
-                        searchId = roamingSettings.Values["id"].ToString();
-                
-                    if (localSettings.Values.ContainsKey("name"))
-                        name = localSettings.Values["name"].ToString();
-
-                    if (localSettings.Values.ContainsKey("semester"))
-                        semesterName = JsonConvert.DeserializeObject<Semester>(localSettings.Values["semester"] as string).ToString();
-
-                    if (localSettings.Values.ContainsKey("semesters"))
-                        semesters = JsonConvert.DeserializeObject<List<Semester>>(localSettings.Values["semesters"].ToString());
-
-                    if (localSettings.Values.ContainsKey("courses"))
-                        courses = JsonConvert.DeserializeObject<List<Course>>(localSettings.Values["courses"].ToString());
-
-                    //Restore data
-                    if (searchId != null)
-                        searchForIdTextBox.Text = searchId;
-
-                    if (name != null)
-                    {
-                        this.name = name;
-                        searchResultLabelTextBlock.Text = name + (semesterName != null ? " " + semesterName : "");
-                    }
-                    else
-                        throw new Exception("Name not cached");
-
-                    if (semesters != null)
-                        semesterComboBox.ItemsSource = semesters;
-
-                    if (courses != null)
-                        FillCoursesIntoGrid(courses);
-                }
-                catch (Exception exception)
-                {
-                    //Clear settings if parsing failed
-                    localSettings.Values.Remove("searchId");
-                    localSettings.Values.Remove("name");
-                    localSettings.Values.Remove("semester");
-                    localSettings.Values.Remove("semesters");
-                    localSettings.Values.Remove("courses");
-
-                    //Send GA Exception
-                    App.Current.GATracker.SendException(exception.Message, false);
-                }
             }
         }
 
