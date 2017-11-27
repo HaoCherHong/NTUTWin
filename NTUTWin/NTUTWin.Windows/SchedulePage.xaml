@@ -23,8 +23,18 @@
                 <ColumnDefinition Width="*"/>
             </Grid.ColumnDefinitions>
             <TextBlock x:Name="titleTextBlock" FontSize="32" Text="106學年度行事曆" Margin="0,0,0,10" Grid.Row="0"/>
-            <StackPanel Orientation="Vertical" Margin="0,0,20,0" Grid.Row="1" Grid.Column="0" Width="285">
-                <Border Width="271" Height="265" HorizontalAlignment="Left">
+            <StackPanel Orientation="Vertical" Margin="0,0,20,0" Grid.Row="1" Grid.Column="0" Width="271">
+                <Grid  Margin="0, 0, 0, 10">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto"/>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="Auto"/>
+                    </Grid.ColumnDefinitions>
+                    <Button x:Name="previousYearButton" Content="105學年" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Top" Click="previousYearButton_Click" Grid.Row="0" Grid.Column="0"/>
+                    <Button x:Name="openInWebButton" Content="開啟網頁" HorizontalAlignment="Stretch" Click="openInWebButton_Click" Grid.Row="0" Grid.Column="1"/>
+                    <Button x:Name="nextYearButton" Content="107學年" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Top" Click="nextYearButton_Click" Grid.Row="0" Grid.Column="2"/>
+                </Grid>
+                <Border Width="271" Height="265">
                     <Border Width="542" Height="530">
                         <controls:Calendar x:Name="calendar" FirstDayOfWeek="Monday" DisplayDateChanged="calendar_DisplayDateChanged" SelectedDatesChanged="calendar_SelectedDatesChanged" RenderTransformOrigin="0,0">
                             <controls:Calendar.RenderTransform>
@@ -46,8 +56,6 @@
                         <ListViewItem>讀取中...</ListViewItem>
                     </ListView.Items>
                 </ListView>
-            <Button x:Name="previousYearButton" Content="105學年" HorizontalAlignment="Left" Margin="92,4,0,0" VerticalAlignment="Top" Grid.Row="0" Grid.Column="1" Click="previousYearButton_Click"/>
-            <Button x:Name="nextYearButton" Content="107學年" HorizontalAlignment="Left" Margin="7,4,0,0" VerticalAlignment="Top" Grid.Row="0" Grid.Column="1" Click="nextYearButton_Click"/>
         </Grid>
     </Grid>
 </Page>

@@ -152,5 +152,13 @@ namespace NTUTWin
         {
             CurrentAcademicYear++;
         }
+
+        private async void openInWebButton_Click(object sender, RoutedEventArgs e)
+        {
+            await Windows.System.Launcher.LaunchUriAsync(new Uri(string.Format("http://www.cc.ntut.edu.tw/~wwwoaa/oaa-nwww/oaa-cal/oaa-cal_{0}.html", currentAcademicYear)));
+
+            //Send GA Event
+            App.Current.GATracker.SendEvent("Other", "Go to Schedule Web " + currentAcademicYear, null, 0);
+        }
     }
 }
