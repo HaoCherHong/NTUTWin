@@ -11,7 +11,7 @@
     <Grid Background="{ThemeResource ApplicationPageBackgroundThemeBrush}">
         <StackPanel Orientation="Vertical" Margin="25" MaxWidth="1024" HorizontalAlignment="Left">
             <TextBlock Text="關於" FontSize="32" Margin="0,0,0,5"/>
-            <Image Source="Assets/Logo.png" Height="80" Margin="10" HorizontalAlignment="Left"/>
+            <Image Source="../Assets/Logo.png" Height="80" Margin="10" HorizontalAlignment="Left"/>
             <TextBlock Name="versionNumberTextBlock" Foreground="Gray" FontSize="16" Margin="0,0,0,10"/>
             <TextBlock Foreground="White" FontSize="16" Text="北科窗戶為北科學生為了方便同學快速查詢學校資訊系統而自行無償製作。&#x0a;我們投入了許多時間成本來開發，讓大家有個方便友善的介面可以使用。&#x0a;您的貢獻與鼓勵是我們前進的動力。" />
             <StackPanel Orientation="Horizontal">
