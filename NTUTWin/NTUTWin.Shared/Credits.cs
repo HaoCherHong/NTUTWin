@@ -61,12 +61,10 @@ namespace NTUTWin
 			{
 				tasks.AddRange(semester.Credits.Select(async credit =>
 				{
-					var detailResult = await NPAPI.GetCourseDetail(credit.CourseId);
-					if (!detailResult.Success)
-						throw new NPAPI.NPException(detailResult.Message, detailResult.Error);
+					var courseDetail = await NPAPI.GetCourseDetail(credit.CourseId);
 
 					//Set course detail
-					credit.Detail = detailResult.Data;
+					credit.Detail = courseDetail;
 
 					if (credit.Grade >= 60)
 					{

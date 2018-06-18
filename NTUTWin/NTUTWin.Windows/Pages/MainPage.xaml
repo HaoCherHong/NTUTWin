@@ -65,7 +65,7 @@
                     </Style>
                 </ListView.ItemContainerStyle>
                 <ListViewItem Name="CurriculumListViewItem">查課表</ListViewItem>
-                <ListViewItem Name="ScheduleListViewItem">行事曆</ListViewItem>
+                <ListViewItem Name="ScheduleListViewItem" Visibility="Collapsed">行事曆</ListViewItem>
                 <ListViewItem Name="MidAlertListViewItem">期中預警</ListViewItem>
                 <ListViewItem Name="AttendenceAndHonorsListViewItem">缺曠獎懲</ListViewItem>
                 <ListViewItem Name="CreditsListViewItem">學分查詢</ListViewItem>

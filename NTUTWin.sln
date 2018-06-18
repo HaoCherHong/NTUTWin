@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 14
-VisualStudioVersion = 14.0.25123.0
+VisualStudioVersion = 14.0.24720.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "NTUTWin", "NTUTWin", "{5D615E92-5B8A-4F06-A7BC-C9E681AF8FAD}"
 EndProject
@@ -9,12 +9,9 @@ Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "NTUTWin.Shared", "NTUTWin\N
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NTUTWin.Windows", "NTUTWin\NTUTWin.Windows\NTUTWin.Windows.csproj", "{5BE52BBC-28FE-43F5-92DB-C76E021B2680}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "NTUTWin.WindowsPhone", "NTUTWin\NTUTWin.WindowsPhone\NTUTWin.WindowsPhone.csproj", "{CCFBEFF6-E081-40EC-B680-2F49C8B264F0}"
-EndProject
 Global
 	GlobalSection(SharedMSBuildProjectFiles) = preSolution
 		NTUTWin\NTUTWin.Shared\NTUTWin.Shared.projitems*{5be52bbc-28fe-43f5-92db-c76e021b2680}*SharedItemsImports = 4
-		NTUTWin\NTUTWin.Shared\NTUTWin.Shared.projitems*{ccfbeff6-e081-40ec-b680-2f49c8b264f0}*SharedItemsImports = 4
 		NTUTWin\NTUTWin.Shared\NTUTWin.Shared.projitems*{4083c7a9-0f97-4531-86bf-0684f2f9b388}*SharedItemsImports = 13
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -52,30 +49,6 @@ Global
 		{5BE52BBC-28FE-43F5-92DB-C76E021B2680}.Release|x86.ActiveCfg = Release|x86
 		{5BE52BBC-28FE-43F5-92DB-C76E021B2680}.Release|x86.Build.0 = Release|x86
 		{5BE52BBC-28FE-43F5-92DB-C76E021B2680}.Release|x86.Deploy.0 = Release|x86
-		{CCFBEFF6-E081-40EC-B680-2F49C8B264F0}.Debug|Any CPU.ActiveCfg = Debug|x86
-		{CCFBEFF6-E081-40EC-B680-2F49C8B264F0}.Debug|Any CPU.Build.0 = Debug|x86
-		{CCFBEFF6-E081-40EC-B680-2F49C8B264F0}.Debug|Any CPU.Deploy.0 = Debug|x86
-		{CCFBEFF6-E081-40EC-B680-2F49C8B264F0}.Debug|ARM.ActiveCfg = Debug|ARM
-		{CCFBEFF6-E081-40EC-B680-2F49C8B264F0}.Debug|ARM.Build.0 = Debug|ARM
-		{CCFBEFF6-E081-40EC-B680-2F49C8B264F0}.Debug|ARM.Deploy.0 = Debug|ARM
-		{CCFBEFF6-E081-40EC-B680-2F49C8B264F0}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{CCFBEFF6-E081-40EC-B680-2F49C8B264F0}.Debug|x64.Build.0 = Debug|Any CPU
-		{CCFBEFF6-E081-40EC-B680-2F49C8B264F0}.Debug|x64.Deploy.0 = Debug|Any CPU
-		{CCFBEFF6-E081-40EC-B680-2F49C8B264F0}.Debug|x86.ActiveCfg = Debug|x86
-		{CCFBEFF6-E081-40EC-B680-2F49C8B264F0}.Debug|x86.Build.0 = Debug|x86
-		{CCFBEFF6-E081-40EC-B680-2F49C8B264F0}.Debug|x86.Deploy.0 = Debug|x86
-		{CCFBEFF6-E081-40EC-B680-2F49C8B264F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CCFBEFF6-E081-40EC-B680-2F49C8B264F0}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CCFBEFF6-E081-40EC-B680-2F49C8B264F0}.Release|Any CPU.Deploy.0 = Release|Any CPU
-		{CCFBEFF6-E081-40EC-B680-2F49C8B264F0}.Release|ARM.ActiveCfg = Release|ARM
-		{CCFBEFF6-E081-40EC-B680-2F49C8B264F0}.Release|ARM.Build.0 = Release|ARM
-		{CCFBEFF6-E081-40EC-B680-2F49C8B264F0}.Release|ARM.Deploy.0 = Release|ARM
-		{CCFBEFF6-E081-40EC-B680-2F49C8B264F0}.Release|x64.ActiveCfg = Release|Any CPU
-		{CCFBEFF6-E081-40EC-B680-2F49C8B264F0}.Release|x64.Build.0 = Release|Any CPU
-		{CCFBEFF6-E081-40EC-B680-2F49C8B264F0}.Release|x64.Deploy.0 = Release|Any CPU
-		{CCFBEFF6-E081-40EC-B680-2F49C8B264F0}.Release|x86.ActiveCfg = Release|x86
-		{CCFBEFF6-E081-40EC-B680-2F49C8B264F0}.Release|x86.Build.0 = Release|x86
-		{CCFBEFF6-E081-40EC-B680-2F49C8B264F0}.Release|x86.Deploy.0 = Release|x86
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -83,6 +56,5 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{4083C7A9-0F97-4531-86BF-0684F2F9B388} = {5D615E92-5B8A-4F06-A7BC-C9E681AF8FAD}
 		{5BE52BBC-28FE-43F5-92DB-C76E021B2680} = {5D615E92-5B8A-4F06-A7BC-C9E681AF8FAD}
-		{CCFBEFF6-E081-40EC-B680-2F49C8B264F0} = {5D615E92-5B8A-4F06-A7BC-C9E681AF8FAD}
 	EndGlobalSection
 EndGlobal

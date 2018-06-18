@@ -125,71 +125,52 @@ namespace NTUTWin
 			progressRing.IsActive = true;
 			progressTextBlock.Text = "檢查登入狀態";
 
-			//Check is logged in
-			var result = await NPAPI.IsLoggedIn();
-			if (result.Success)
-			{
-				var roamingSettings = ApplicationData.Current.RoamingSettings;
-				bool isLoggedIn = result.Data;
+            try
+            {
+                var isLoggedIn = await NPAPI.IsLoggedIn();
+                var roamingSettings = ApplicationData.Current.RoamingSettings;
 
-				if (!isLoggedIn)
-				{
-					//Not logged in, login now
-					progressTextBlock.Text = "登入中";
+                if (!isLoggedIn)
+                {
+                    //Not logged in, login now
+                    progressTextBlock.Text = "登入中";
+                    throw new NPAPI.SessionExpiredException();
+                }
 
-					var loginResult = await NPAPI.BackgroundLogin();
-					if (!loginResult.Success)
-					{
-						//Failed
-						if (loginResult.Error == NPAPI.RequestResult.ErrorType.Unauthorized)
-						{
-							//Not logged in, navagate to login page
-							Frame.Navigate(typeof(LoginPage));
-							return;
-						}
-						else
-						{
-							//Unexpected error occured, show error message
-							progressRing.IsActive = false;
-							progressTextBlock.Text = loginResult.Message;
-							return;
-						}
-					}
-				}
-				
-				//Set global cookie to current saved JSESSIONID
-				HttpBaseProtocolFilter filter = new HttpBaseProtocolFilter();
-				HttpCookie cookie = new HttpCookie("JSESSIONID", baseUri.Host, "/");
-				cookie.Value = roamingSettings.Values["JSESSIONID"].ToString();
-				filter.CookieManager.SetCookie(cookie, false);
+                //Set global cookie to current saved JSESSIONID
+                HttpBaseProtocolFilter filter = new HttpBaseProtocolFilter();
+                HttpCookie cookie = new HttpCookie("JSESSIONID", baseUri.Host, "/");
+                cookie.Value = roamingSettings.Values["JSESSIONID"].ToString();
+                filter.CookieManager.SetCookie(cookie, false);
 
-				//Set progress
-				progressTextBlock.Text = "載入中";
+                //Set progress
+                progressTextBlock.Text = "載入中";
 
-				//
-				GoHome();
-			}
-			else
-			{
-				if (result.Error == NPAPI.RequestResult.ErrorType.Unauthorized)
-				{
-					//Send GA Event
-					App.Current.GATracker.SendEvent("Session", "Session Expired", null, 0);
+                //
+                GoHome();
+            }
+            catch (NPAPI.SessionExpiredException)
+            {
+                //Send GA Event
+                App.Current.GATracker.SendEvent("Session", "Session Expired", null, 0);
 
-					//Try background login
-					var loginResult = await NPAPI.BackgroundLogin();
-					if (loginResult.Success)
-						await Login();
-					else
-						Frame.Navigate(typeof(LoginPage));
-				}
-				else
-				{
-					//Show message
-					progressRing.IsActive = false;
-					progressTextBlock.Text = result.Message;
-				}
-			}
+                //Try background login
+                try
+                {
+                    await NPAPI.BackgroundLogin();
+                    await Login();
+                }
+                catch
+                {
+                    Frame.Navigate(typeof(LoginPage));
+                }
+            }
+            catch (Exception e)
+            {
+                //Show message
+                progressRing.IsActive = false;
+                progressTextBlock.Text = e.Message;
+            }
 		}
 
 		private void GoHome()

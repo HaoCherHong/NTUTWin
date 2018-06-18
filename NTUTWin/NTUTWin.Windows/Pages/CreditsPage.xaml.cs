@@ -1,8 +1,5 @@
-﻿#define DEBUG_DOC
-
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
@@ -17,10 +14,6 @@ namespace NTUTWin
     public sealed partial class CreditsPage : Page
     {
         List<UIElement> creditsHeaders;
-
-#if DEBUG && DEBUG_DOC
-        private int skip = 34;
-#endif
 
         public CreditsPage()
         {
@@ -41,87 +34,34 @@ namespace NTUTWin
             semestersComboBox.SelectedIndex = 0;
 
             await GetCredits();
-
-#if DEBUG && DEBUG_DOC
-            Windows.UI.Core.CoreWindow.GetForCurrentThread().KeyDown += async (Windows.UI.Core.CoreWindow keySender, Windows.UI.Core.KeyEventArgs keyEvent) =>
-            {
-                if (keyEvent.VirtualKey == Windows.System.VirtualKey.Right)
-                    await DebugCredits();
-                else if(semestersComboBox.FocusState == FocusState.Unfocused || semestersComboBox.FocusState == FocusState.Pointer)
-                    if (keyEvent.VirtualKey == Windows.System.VirtualKey.Down)
-                    {
-                    
-                        if (semestersComboBox.SelectedIndex + 1 < semestersComboBox.Items.Count)
-                            semestersComboBox.SelectedIndex++;
-                    }
-                    else if (keyEvent.VirtualKey == Windows.System.VirtualKey.Up)
-                    {
-                        if (semestersComboBox.SelectedIndex - 1 >= 0)
-                            semestersComboBox.SelectedIndex--;
-                    }
-            };
-#endif
         }
-
-#if DEBUG && DEBUG_DOC
-        private async Task DebugCredits()
-        {
-            summaryTextBlock.Text = "讀取中...";
-            semestersComboBox.ItemsSource = null;
-            semestersComboBox.Items.Clear();
-            semestersComboBox.Items.Add("讀取中...");
-            semestersComboBox.SelectedIndex = 0;
-
-            var result = await NPAPI.DebugCredits(skip++);
-            if (result.Success)
-            {
-                ApplyCredits(result.Data);
-
-                var credits = result.Data;
-                float totalCreditsGot = 0;
-                foreach(Credits.Semester semester in credits.Semesters)
-                {
-                    float creditsGot = 0;
-                    float creditsWanted = 0;
-                    foreach (Credits.Credit credit in semester.Credits)
-                    {
-                        creditsWanted += credit.Credits;
-                        if (credit.Grade >= 60 && credit.Type != "暑")
-                            creditsGot += credit.Credits;
-                    }
-                    Debug.Assert(creditsGot == semester.CreditsGot, "Credits Mismatch");
-                    totalCreditsGot += creditsGot;
-                }
-                Debug.Assert(totalCreditsGot == credits.TotalCreditsGot, "Total Credits Mismatch");
-
-                //await DebugCredits();
-            }
-            else
-                summaryTextBlock.Text = result.Message;
-        }
-#endif
 
         private async Task GetCredits()
         {
-            var result = await NPAPI.GetCredits();
-            if (result.Success)
-                ApplyCredits(result.Data);
-            else
+            try
             {
-                if (result.Error == NPAPI.RequestResult.ErrorType.Unauthorized)
-                {
-                    //Send GA Event
-                    App.Current.GATracker.SendEvent("Session", "Session Expired", null, 0);
+                var result = await NPAPI.GetCredits();
+                ApplyCredits(result);
+            }
+            catch (NPAPI.SessionExpiredException)
+            {
+                //Send GA Event
+                App.Current.GATracker.SendEvent("Session", "Session Expired", null, 0);
 
-                    //Try background login
-                    var loginResult = await NPAPI.BackgroundLogin();
-                    if (loginResult.Success)
-                        await GetCredits();
-                    else
-                        Frame.Navigate(typeof(LoginPage));
+                //Try background login
+                try
+                {
+                    await NPAPI.BackgroundLogin();
+                    await GetCredits();
                 }
-                else
-                    summaryTextBlock.Text = result.Message;
+                catch
+                {
+                    Frame.Navigate(typeof(LoginPage));
+                }
+            }
+            catch (Exception e)
+            {
+                summaryTextBlock.Text = e.Message;
             }
         }
 

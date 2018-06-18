@@ -116,12 +116,11 @@ namespace NTUTWin
 
         private async Task GetSchedule(Semester semester)
         {
-            var coursesRequest = await NPAPI.GetCourses(searchForIdTextBox.Text, semester.Year, semester.SemesterNumber);
-
-            if (coursesRequest.Success)
+            try
             {
+                var courses = await NPAPI.GetCourses(searchForIdTextBox.Text, semester.Year, semester.SemesterNumber);
                 //Fill scheduleGrid
-                FillCoursesIntoGrid(coursesRequest.Data);
+                FillCoursesIntoGrid(courses);
 
                 //Update result label
                 searchResultLabelTextBlock.Text = name + " " + semester;
@@ -130,7 +129,7 @@ namespace NTUTWin
                 //searchAppBarToggleButton.Visibility = Visibility.Visible;
 
                 //Save to roaming settings
-                var coursesJson = JsonConvert.SerializeObject(coursesRequest.Data);
+                var coursesJson = JsonConvert.SerializeObject(courses);
                 var semesterJson = JsonConvert.SerializeObject(semester);
                 SaveToSettings(localSettings, "courses", coursesJson.ToString());
                 SaveToSettings(localSettings, "semester", semesterJson.ToString());
@@ -139,22 +138,25 @@ namespace NTUTWin
                 bool searchSelf = roamingSettings.Values.ContainsKey("id") && roamingSettings.Values["id"] as string == searchForIdTextBox.Text;
                 App.Current.GATracker.SendEvent("Get Curriculum", semester.ToString(), searchForIdTextBox.Text, searchSelf ? 0 : 1);
             }
-            else
+            catch (NPAPI.SessionExpiredException)
             {
-                if (coursesRequest.Error == NPAPI.RequestResult.ErrorType.Unauthorized)
-                {
-                    //Send GA Event
-                    App.Current.GATracker.SendEvent("Session", "Session Expired", null, 0);
+                //Send GA Event
+                App.Current.GATracker.SendEvent("Session", "Session Expired", null, 0);
 
-                    //Try background login
-                    var result = await NPAPI.BackgroundLogin();
-                    if (result.Success)
-                        await GetSchedule(semester);
-                    else
-                        Frame.Navigate(typeof(LoginPage));
+                //Try background login
+                try
+                {
+                    await NPAPI.BackgroundLogin();
+                    await GetSchedule(semester);
                 }
-                else
-                    await new MessageDialog(coursesRequest.Message, "錯誤").ShowAsync();
+                catch
+                {
+                    Frame.Navigate(typeof(LoginPage));
+                }
+            }
+            catch (Exception e)
+            {
+                await new MessageDialog(e.Message, "錯誤").ShowAsync();
             }
         }
 
@@ -338,10 +340,10 @@ namespace NTUTWin
             //Disable user input
             searchForIdTextBox.IsEnabled = searchSelfButton.IsEnabled = semesterComboBox.IsEnabled = getSemestersButton.IsEnabled = false;
 
-            var semestersRequest = await NPAPI.GetSemesters(id);
-            bool saveSearchId = true;
-            if (semestersRequest.Success)
+            try
             {
+                var semestersRequest = await NPAPI.GetSemesters(id);
+
                 //Update label
                 name = semestersRequest.Name;
                 searchResultLabelTextBlock.Text = name;
@@ -359,31 +361,30 @@ namespace NTUTWin
                 //Send GA Event
                 bool searchSelf = roamingSettings.Values.ContainsKey("id") && roamingSettings.Values["id"] as string == id;
                 App.Current.GATracker.SendEvent("Get Semesters", null, id, searchSelf ? 0 : 1);
-            }
-            else
-            {
-                if (semestersRequest.Error == NPAPI.RequestResult.ErrorType.Unauthorized)
-                {
-                    //Send GA Event
-                    App.Current.GATracker.SendEvent("Session", "Session Expired", null, 0);
 
-                    //Try background login
-                    var result = await NPAPI.BackgroundLogin();
-                    if (result.Success)
-                        await SearchForId(id);
-                    else
-                        Frame.Navigate(typeof(LoginPage));
-                }
-                else
-                {
-                    await new MessageDialog(semestersRequest.Message, "錯誤").ShowAsync();
-                    saveSearchId = false;
-                }
-
-            }
-
-            if (saveSearchId)
+                //Save search id
                 SaveToSettings(localSettings, "searchId", id);
+            }
+            catch (NPAPI.SessionExpiredException)
+            {
+                //Send GA Event
+                App.Current.GATracker.SendEvent("Session", "Session Expired", null, 0);
+
+                //Try background login
+                try
+                {
+                    await NPAPI.BackgroundLogin();
+                    await SearchForId(id);
+                }
+                catch
+                {
+                    Frame.Navigate(typeof(LoginPage));
+                }
+            }
+            catch (Exception e)
+            {
+                await new MessageDialog(e.Message, "錯誤").ShowAsync();
+            }
 
             //Enableuser input
             searchForIdTextBox.IsEnabled = searchSelfButton.IsEnabled = semesterComboBox.IsEnabled = getSemestersButton.IsEnabled = true;

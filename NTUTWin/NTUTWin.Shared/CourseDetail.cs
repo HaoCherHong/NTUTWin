@@ -41,44 +41,37 @@ namespace NTUTWin
         public static CourseDetail Parse(string html)
         {
             CourseDetail detail = new CourseDetail();
-            Regex regex = new Regex(
-                "<table border=1>\n" +
-                "<tr><th>課　　號<td>([^\n]*)\n" +
-                "<tr><th>學 年 度<td>([^<]*)</tr>\n" +
-                "<tr><th>學　　期<td>([^<]*)</tr>\n" +
-                "<tr><th>課程名稱\n" +
-				"<td><a href=\"[^\"]+\">([^<]*)</a>\n" +
-				"<tr><th>階　　段<td>([^<]*)</tr>\n" +
-				"<tr><th>學　　分<td>([^<]*)</tr>\n" +
-				"<tr><th>時　　數<td>([^<]*)</tr>\n" +
-				"<tr><th>類　　別<td>([^<]*)</tr>\n" +
-				"<tr><th>授課教師\n" +
-				"<td>(?:<a href=\"Teach.jsp[^\"]+\">(?<teachers>[^<]*)</a>(?:<br>)?\\s*\n*)*\\s*\n*" +
-				"(?:<A href=\"[^\"]+\">《查詢教學大綱與進度表》</A><BR>\n+)?" +
-				"<tr><th>開課班級\n" +
-				"<td>(?:<a href=\"[^\"]+\">(?<classes>[^<]*)</a><br>\n)*\\s?\n" +
-				"<tr><th>教　　室\n" +
-				"<td>(?:<a href=\"[^\"]+\">(?<classRooms>[^<]*)</a><br>\n)*\\s?\n" +
-				"<tr><th>修課人數<td>([^<]*)</tr>\n" +
-				"<tr><th>撤選人數<td>([^<]*)</tr>\n" +
-				"<tr><th>教學助理\n" +
-				"<td>(?:(?!<tr>).|\n)+" +
-				"<tr><th>授課語言<td>([^\n]*)\n" +
-				"<tr><th>隨班附讀<td>([^\n]*)\n" +
-				"<tr><th>實驗、實習<td>([^\n]*)\n" +
-				"<tr><th>備　　註<td>([^\n]*)\n"
-				, RegexOptions.Multiline | RegexOptions.IgnoreCase);
 
-            var match = regex.Match(html);
+            var courseId =      new Regex("<tr><th>課　　號<td>([^\n]*)\n").Match(html).Groups[1].Value;
+            var schoolYear =    new Regex("<tr><th>學 年 度<td>([^<]*)</tr>\n").Match(html).Groups[1].Value;
+            var semester =      new Regex("<tr><th>學　　期<td>([^<]*)</tr>\n").Match(html).Groups[1].Value;
+            var name =          new Regex("<tr><th>課程名稱\n").Match(html).Groups[1].Value;
+            var phase =         new Regex("<tr><th>階　　段<td>([^<]*)</tr>\n").Match(html).Groups[1].Value;
+            var credits =       new Regex("<tr><th>學　　分<td>([^<]*)</tr>\n").Match(html).Groups[1].Value;
+            var hours =         new Regex("<tr><th>時　　數<td>([^<]*)</tr>\n").Match(html).Groups[1].Value;
+            var type =          new Regex("<tr><th>類　　別<td>([^<]*)</tr>\n").Match(html).Groups[1].Value;
+            var peopleCount =   new Regex("<tr><th>修課人數<td>([^<]*)</tr>\n").Match(html).Groups[1].Value;
+            var quitPeopleCount = new Regex("<tr><th>撤選人數<td>([^<]*)</tr>\n").Match(html).Groups[1].Value;
+            var language =      new Regex("<tr><th>授課語言<td>([^\n]*)\n").Match(html).Groups[1].Value;
+            var audit =         new Regex("<tr><th>隨班附讀<td>([^\n]*)\n").Match(html).Groups[1].Value;
+            var pratice =       new Regex("<tr><th>實驗、實習<td>([^\n]*)\n").Match(html).Groups[1].Value;
+            var note =          new Regex("<tr><th>備　　註<td>([^\n]*)\n").Match(html).Groups[1].Value;
 
-            detail.CourseId = match.Groups[1].Value;
-            detail.SchoolYear = int.Parse(match.Groups[2].Value);
-            detail.Semester = int.Parse(match.Groups[3].Value);
-            detail.Name = match.Groups[4].Value;
-            detail.Phase = int.Parse(match.Groups[5].Value);
-            detail.Credits = float.Parse(match.Groups[6].Value);
-            detail.Hours = float.Parse(match.Groups[7].Value);
-            detail.Type = match.Groups[8].Value;
+
+            detail.CourseId = courseId;
+            detail.SchoolYear = int.Parse(schoolYear);
+            detail.Semester = int.Parse(semester);
+            detail.Name = name;
+            detail.Phase = int.Parse(phase);
+            detail.Credits = float.Parse(credits);
+            detail.Hours = float.Parse(hours);
+            detail.Type = type;
+            detail.PeopleCount = int.Parse(peopleCount);
+            detail.QuitPeopleCount = int.Parse(quitPeopleCount);
+            detail.Language = language;
+            detail.Audit = audit == "是";
+            detail.Pratice = pratice == "是";
+            detail.Note = note;
 
             switch (detail.Type)
             {
@@ -102,21 +95,32 @@ namespace NTUTWin
                     break;
             }
 
-            foreach (Capture capture in match.Groups["teachers"].Captures)
-                detail.Teachers.Add(capture.Value);
+            // TODO: Fix the folowing parsing algorithm
 
-            foreach (Capture capture in match.Groups["classes"].Captures)
-                detail.Classes.Add(capture.Value);
+            //Regex regex = new Regex(
+            //    "<tr><th>授課教師\n" +
+            //    "<td>(?:<a href=\"Teach.jsp[^\"]+\">(?<teachers>[^<]*)</a>(?:<br>)?\\s*\n*)*\\s*\n*" +
+            //    "(?:<A href=\"[^\"]+\">《查詢教學大綱與進度表》</A><BR>\n+)?" +
+            //    "<tr><th>開課班級\n" +
+            //    "<td>(?:<a href=\"[^\"]+\">(?<classes>[^<]*)</a><br>\n)*\\s?\n" +
+            //    "<tr><th>教　　室\n" +
+            //    "<td>(?:<a href=\"[^\"]+\">(?<classRooms>[^<]*)</a><br>\n)*\\s?\n" +
+            //    "<tr><th>修課人數<td>([^<]*)</tr>\n" +
+            //    "<tr><th>撤選人數<td>([^<]*)</tr>\n" +
+            //    "<tr><th>教學助理\n" +
+            //    "<td>(?:(?!<tr>).|\n)+"
+            //    , RegexOptions.Multiline | RegexOptions.IgnoreCase);
 
-            foreach (Capture capture in match.Groups["classRooms"].Captures)
-                detail.ClassRooms.Add(capture.Value);
+            //var match = regex.Match(html);
 
-            detail.PeopleCount = int.Parse(match.Groups[9].Value);
-            detail.QuitPeopleCount = int.Parse(match.Groups[10].Value);
-            detail.Language = match.Groups[11].Value;
-            detail.Audit = match.Groups[12].Value == "是";
-            detail.Pratice = match.Groups[13].Value == "是";
-            detail.Note = match.Groups[14].Value;
+            //foreach (Capture capture in match.Groups["teachers"].Captures)
+            //    detail.Teachers.Add(capture.Value);
+
+            //foreach (Capture capture in match.Groups["classes"].Captures)
+            //    detail.Classes.Add(capture.Value);
+
+            //foreach (Capture capture in match.Groups["classRooms"].Captures)
+            //    detail.ClassRooms.Add(capture.Value);
 
             var studentsRegex = new Regex("^<tr><td>([^\\s]*)\\s*<td><a href=\"[^\"]+\">([^<]*)</a><td>([^<]*)<td>\\s*([^<]+)<td><div align=center>([^<]*)</div><td(?: bgcolor=#ffcccc)?>([^\\s]*)", RegexOptions.Multiline | RegexOptions.IgnoreCase);
             var studentsMatches = studentsRegex.Matches(html);

@@ -10,7 +10,7 @@
     <Page.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="ResourceDictionary.xaml"/>
+                <ResourceDictionary Source="../ResourceDictionary.xaml"/>
             </ResourceDictionary.MergedDictionaries>
             <local:MidAlertListDataTemplateSelector x:Key="MidAlertListDataTEmplateSelector">
                 <local:MidAlertListDataTemplateSelector.SubmittedTemplate>

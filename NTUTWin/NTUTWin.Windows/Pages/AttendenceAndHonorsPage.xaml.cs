@@ -1,6 +1,4 @@
-﻿#define DEBUG_DOC
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Windows.UI.Xaml;
@@ -37,24 +35,6 @@ namespace NTUTWin
             attendenceGridHeaders = new List<UIElement>(attendenceGrid.Children);
             honorsGrid.Children.Clear();
             attendenceGrid.Children.Clear();
-
-#if DEBUG && DEBUG_DOC
-            Windows.UI.Core.CoreWindow.GetForCurrentThread().KeyDown += async (Windows.UI.Core.CoreWindow keySender, Windows.UI.Core.KeyEventArgs keyEvent) =>
-            {
-                if (keyEvent.VirtualKey == Windows.System.VirtualKey.Right)
-                    await DebugAttendenceAndHonors();
-                else if (keyEvent.VirtualKey == Windows.System.VirtualKey.Down)
-                {
-                    if (semestersComboBox.SelectedIndex + 1 < semestersComboBox.Items.Count)
-                        semestersComboBox.SelectedIndex++;
-                }
-                else if (keyEvent.VirtualKey == Windows.System.VirtualKey.Up)
-                {
-                    if (semestersComboBox.SelectedIndex - 1 >= 0)
-                        semestersComboBox.SelectedIndex--;
-                }
-            };
-#endif
             await GetAttendenceAndHonors();
         }
 
@@ -64,78 +44,36 @@ namespace NTUTWin
             semestersComboBox.Items.Clear();
             semestersComboBox.Items.Add("讀取中...");
             semestersComboBox.SelectedIndex = 0;
-
-            var result = await NPAPI.GetAttendenceAndHonors();
-            if (result.Success)
+            try
             {
-                semestersComboBox.ItemsSource = result.Data.Semesters;
+                var result = await NPAPI.GetAttendenceAndHonors();
+                semestersComboBox.ItemsSource = result.Semesters;
                 if (semestersComboBox.Items.Count > 0)
                     semestersComboBox.SelectedIndex = 0;
             }
-            else
+            catch(NPAPI.SessionExpiredException)
             {
-                if (result.Error == NPAPI.RequestResult.ErrorType.Unauthorized)
-                {
-                    //Send GA Event
-                    App.Current.GATracker.SendEvent("Session", "Session Expired", null, 0);
+                //Send GA Event
+                App.Current.GATracker.SendEvent("Session", "Session Expired", null, 0);
 
-                    //Try background login
-                    var loginResult = await NPAPI.BackgroundLogin();
-                    if (loginResult.Success)
-                        await GetAttendenceAndHonors();
-                    else
-                        Frame.Navigate(typeof(LoginPage));
-                }
-                else
+                //Try background login
+                try
                 {
-                    semestersComboBox.ItemsSource = null;
-                    semestersComboBox.Items.Clear();
-                    semestersComboBox.Items.Add(result.Message);
-                    semestersComboBox.SelectedIndex = 0;
+                    await NPAPI.BackgroundLogin();
                 }
+                catch
+                {
+                    Frame.Navigate(typeof(LoginPage));
+                }
+            }
+            catch(Exception e)
+            {
+                semestersComboBox.ItemsSource = null;
+                semestersComboBox.Items.Clear();
+                semestersComboBox.Items.Add(e.Message);
+                semestersComboBox.SelectedIndex = 0;
             }
         }
-
-#if DEBUG && DEBUG_DOC
-        private async Task DebugAttendenceAndHonors()
-        {
-            semestersComboBox.ItemsSource = null;
-            semestersComboBox.Items.Clear();
-            semestersComboBox.Items.Add("讀取中...");
-            semestersComboBox.SelectedIndex = 0;
-
-            var result = await NPAPI.DebugAttendenceAndHonors(skip);
-            if (result.Success)
-            {
-                skip++;
-                semestersComboBox.ItemsSource = result.Data.Semesters;
-                if (semestersComboBox.Items.Count > 0)
-                    semestersComboBox.SelectedIndex = 0;
-            }
-            else
-            {
-                if (result.Error == NPAPI.RequestResult.ErrorType.Unauthorized)
-                {
-                    //Send GA Event
-                    App.Current.GATracker.SendEvent("Session", "Session Expired", null, 0);
-
-                    //Try background login
-                    var loginResult = await NPAPI.BackgroundLogin();
-                    if (loginResult.Success)
-                        await GetAttendenceAndHonors();
-                    else
-                        Frame.Navigate(typeof(LoginPage));
-                }
-                else
-                {
-                    semestersComboBox.ItemsSource = null;
-                    semestersComboBox.Items.Clear();
-                    semestersComboBox.Items.Add(result.Message);
-                    semestersComboBox.SelectedIndex = 0;
-                }
-            }
-        }
-#endif
 
         private void semestersComboBox_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {

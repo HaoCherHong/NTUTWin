@@ -1,18 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using System.Threading.Tasks;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
 using Windows.UI.Xaml.Navigation;
 
 // The Blank Page item template is documented at http://go.microsoft.com/fwlink/?LinkId=234238
@@ -39,26 +28,30 @@ namespace NTUTWin
 
         private async Task GetCourseDetail(string courseId)
         {
-            var result = await NPAPI.GetCourseDetail(courseId);
-
-            if (result.Success)
-                ApplyCourseDetail(result.Data);
-            else
+            try
             {
-                if (result.Error == NPAPI.RequestResult.ErrorType.Unauthorized)
-                {
-                    //Send GA Event
-                    App.Current.GATracker.SendEvent("Session", "Session Expired", null, 0);
+                var result = await NPAPI.GetCourseDetail(courseId);
+                ApplyCourseDetail(result);
+            }
+            catch (NPAPI.SessionExpiredException)
+            {
+                //Send GA Event
+                App.Current.GATracker.SendEvent("Session", "Session Expired", null, 0);
 
-                    //Try background login
-                    var loginResult = await NPAPI.BackgroundLogin();
-                    if (loginResult.Success)
-                        await GetCourseDetail(courseId);
-                    else
-                        Frame.Navigate(typeof(LoginPage));
+                //Try background login
+                try
+                {
+                    await NPAPI.BackgroundLogin();
+                    await GetCourseDetail(courseId);
                 }
-                else
-                    detailTextBlock.Text = result.Message;
+                catch
+                {
+                    Frame.Navigate(typeof(LoginPage));
+                }
+            }
+            catch (Exception e)
+            {
+                detailTextBlock.Text = e.Message;
             }
         }
 

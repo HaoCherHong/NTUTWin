@@ -45,14 +45,6 @@ namespace NTUTWin
             App.Current.GATracker.SendEvent("Other", "Go Rating Page", null, 0);
         }
 
-        private async void donateButton_Click(object sender, RoutedEventArgs e)
-        {
-            await Windows.System.Launcher.LaunchUriAsync(new Uri("https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_id=XV4H7YAT3CAMQ"));
-
-            //Send GA Event
-            App.Current.GATracker.SendEvent("Other", "Go to PayPal donate page", null, 0);
-        }
-
 		private async void gitHubButton_Click(object sender, RoutedEventArgs e)
 		{
 			await Windows.System.Launcher.LaunchUriAsync(new Uri("https://github.com/HaoCherHong/NTUTWin"));

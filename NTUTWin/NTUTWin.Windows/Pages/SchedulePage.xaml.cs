@@ -1,18 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
-using Windows.Foundation;
-using Windows.Foundation.Collections;
-using Windows.UI.Popups;
 using Windows.UI.Xaml;
 using Windows.UI.Xaml.Controls;
-using Windows.UI.Xaml.Controls.Primitives;
-using Windows.UI.Xaml.Data;
-using Windows.UI.Xaml.Input;
-using Windows.UI.Xaml.Media;
-using Windows.UI.Xaml.Navigation;
 
 // 空白頁項目範本已記錄在 http://go.microsoft.com/fwlink/?LinkId=234238
 
@@ -80,28 +69,28 @@ namespace NTUTWin
 
         private async void GetSchedule(int academicYear)
         {
-            var result = await NPAPI.GetSchedule(academicYear);
-            if(result.Success)
+            try
             {
-                schedule = result.Data;
+                var schedule = await NPAPI.GetSchedule(academicYear);
+                this.schedule = schedule;
                 calendar.DisplayDateStart = new DateTime(academicYear + 1911, 8, 1);
                 calendar.DisplayDateEnd = new DateTime(academicYear + 1 + 1911, 7, 31);
                 calendar.SelectionMode = WinRTXamlToolkit.Controls.CalendarSelectionMode.SingleDate;
-                if (schedule.monthSchedules.ContainsKey(calendar.DisplayDate.Month))
-                    listView.ItemsSource = schedule.monthSchedules[calendar.DisplayDate.Month];
+                if (this.schedule.monthSchedules.ContainsKey(calendar.DisplayDate.Month))
+                    listView.ItemsSource = this.schedule.monthSchedules[calendar.DisplayDate.Month];
                 else
                 {
                     listView.ItemsSource = null;
                     listView.Items.Clear();
                 }
             }
-            else
+            catch (Exception e)
             {
                 listView.ItemsSource = null;
                 listView.Items.Clear();
                 listView.Items.Add("讀取失敗，請稍後再試。");
-                listView.Items.Add(result.Message);
-            }
+                listView.Items.Add(e.Message);
+            }            
         }
 
         private void calendar_DisplayDateChanged(object sender, WinRTXamlToolkit.Controls.CalendarDateChangedEventArgs e)

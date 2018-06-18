@@ -1,6 +1,4 @@
-﻿//#define DEBUG_DOC
-
-using System;
+﻿using System;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.UI.Popups;
@@ -16,9 +14,6 @@ namespace NTUTWin
     /// </summary>
     public sealed partial class MidAlertPage : Page
     {
-#if DEBUG_DOC
-        private int skip = 0;
-#endif
         public MidAlertPage()
         {
             this.InitializeComponent();
@@ -30,103 +25,46 @@ namespace NTUTWin
             App.Current.GATracker.SendView("MidAlertPage");
 
             courseDetailButton.Visibility = Visibility.Collapsed;
-
-#if DEBUG && DEBUG_DOC
-            Windows.UI.Core.CoreWindow.GetForCurrentThread().KeyDown += async (Windows.UI.Core.CoreWindow keySender, Windows.UI.Core.KeyEventArgs keyEvent) =>
-            {
-                if (keyEvent.VirtualKey == Windows.System.VirtualKey.Right)
-                    await DebugMidAlert();
-            };
-#endif
             await GetMidAlert();
 
         }
 
-#if DEBUG && DEBUG_DOC
-        private async Task DebugMidAlert()
-        {
-            courseNameTextBlock.Text = "";
-            var request = await NPAPI.DebugMidAlerts(skip++);
-            if (request.Success)
-            {
-                courseNameTextBlock.Text = "(請選擇)";
-                titleTextBlock.Text = request.Data.Semester + " 期中預警";
-                listView.ItemsSource = request.Data.Alerts;
-
-                //Send GA Event
-                string id = ApplicationData.Current.RoamingSettings.Values.ContainsKey("id") ? ApplicationData.Current.RoamingSettings.Values["id"] as string : "N/A";
-                App.Current.GATracker.SendEvent("Mid Alert", "Get Mid Alert", id, 0);
-
-                if (request.Data.Alerts.Count == 0)
-                {
-                    Debugger.Break();
-                    return;
-                }
-            }
-            else
-            {
-                Debugger.Break();
-
-                if (request.Error == NPAPI.RequestResult.ErrorType.Unauthorized)
-                {
-                    //Send GA Event
-                    App.Current.GATracker.SendEvent("Session", "Session Expired", null, 0);
-
-                    //Try background login
-                    var result = await NPAPI.BackgroundLogin();
-                    if (result.Success)
-                        await GetMidAlert();
-                    else
-                        Frame.Navigate(typeof(LoginPage));
-                }
-                else
-                {
-                    listView.Items.Clear();
-                    listView.Items.Add("讀取失敗，請稍後再試。");
-                    listView.Items.Add(request.Message);
-                }
-
-                return;
-            }
-            await DebugMidAlert();
-        }
-#endif
-
         private async Task GetMidAlert()
         {
             courseNameTextBlock.Text = "";
-            var request = await NPAPI.GetMidAlerts();
-            if(request.Success)
+            try
             {
+                var midAlerts = await NPAPI.GetMidAlerts();
+
                 courseNameTextBlock.Text = "(請選擇)";
-                titleTextBlock.Text = request.Data.Semester + " 期中預警";
-                listView.ItemsSource = request.Data.Alerts;
+                titleTextBlock.Text = midAlerts.Semester + " 期中預警";
+                listView.ItemsSource = midAlerts.Alerts;
 
                 //Send GA Event
                 string id = ApplicationData.Current.RoamingSettings.Values.ContainsKey("id") ? ApplicationData.Current.RoamingSettings.Values["id"] as string : "N/A";
                 App.Current.GATracker.SendEvent("Mid Alert", "Get Mid Alert", id, 0);
-
             }
-            else
+            catch (NPAPI.SessionExpiredException)
             {
-                if (request.Error == NPAPI.RequestResult.ErrorType.Unauthorized)
-                {
-                    //Send GA Event
-                    App.Current.GATracker.SendEvent("Session", "Session Expired", null, 0);
+                //Send GA Event
+                App.Current.GATracker.SendEvent("Session", "Session Expired", null, 0);
 
-                    //Try background login
-                    var result = await NPAPI.BackgroundLogin();
-                    if (result.Success)
-                        await GetMidAlert();
-                    else
-                        Frame.Navigate(typeof(LoginPage));
-                }
-                else
+                //Try background login
+                try
                 {
-                    listView.Items.Clear();
-                    listView.Items.Add("讀取失敗，請稍後再試。");
-                    listView.Items.Add(request.Message);
+                    await NPAPI.BackgroundLogin();
+                    await GetMidAlert();
                 }
+                catch
+                {
+                    Frame.Navigate(typeof(LoginPage));
+                }
+            }
+            catch (Exception e)
+            {
+                listView.Items.Clear();
+                listView.Items.Add("讀取失敗，請稍後再試。");
+                listView.Items.Add(e.Message);
             }
         }
 

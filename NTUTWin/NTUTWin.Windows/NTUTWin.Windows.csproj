@@ -18,7 +18,7 @@
     <PackageCertificateKeyFile>NTUTWin.Windows_StoreKey.pfx</PackageCertificateKeyFile>
     <NuGetPackageImportStamp>
     </NuGetPackageImportStamp>
-    <PackageCertificateThumbprint>EF619F498CC8A9E31D6B2EFA4D5557627AA635CC</PackageCertificateThumbprint>
+    <PackageCertificateThumbprint>32F75C06778BA54A11D7162F9ABB07D7CF8EDB4F</PackageCertificateThumbprint>
     <AppxAutoIncrementPackageRevision>False</AppxAutoIncrementPackageRevision>
     <AppxBundlePlatforms>x86|x64|arm</AppxBundlePlatforms>
     <AppxBundle>Always</AppxBundle>
@@ -109,39 +109,39 @@
     <Prefer32Bit>true</Prefer32Bit>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="AttendenceAndHonorsPage.xaml.cs">
+    <Compile Include="Pages\AttendenceAndHonorsPage.xaml.cs">
       <DependentUpon>AttendenceAndHonorsPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="CourseDetailPage.xaml.cs">
+    <Compile Include="Pages\CourseDetailPage.xaml.cs">
       <DependentUpon>CourseDetailPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="CreditsPage.xaml.cs">
+    <Compile Include="Pages\CreditsPage.xaml.cs">
       <DependentUpon>CreditsPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="DonatePage.xaml.cs">
+    <Compile Include="Pages\DonatePage.xaml.cs">
       <DependentUpon>DonatePage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="FeedbackPage.xaml.cs">
+    <Compile Include="Pages\FeedbackPage.xaml.cs">
       <DependentUpon>FeedbackPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="LoginPage.xaml.cs">
+    <Compile Include="Pages\LoginPage.xaml.cs">
       <DependentUpon>LoginPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="CurriculumPage.xaml.cs">
+    <Compile Include="Pages\CurriculumPage.xaml.cs">
       <DependentUpon>CurriculumPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="MainPage.xaml.cs">
+    <Compile Include="Pages\MainPage.xaml.cs">
       <DependentUpon>MainPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="MidAlertListDataTemplateSelector.cs" />
-    <Compile Include="MidAlertPage.xaml.cs">
+    <Compile Include="Pages\MidAlertPage.xaml.cs">
       <DependentUpon>MidAlertPage.xaml</DependentUpon>
     </Compile>
-    <Compile Include="PortalPage.xaml.cs">
+    <Compile Include="Pages\PortalPage.xaml.cs">
       <DependentUpon>PortalPage.xaml</DependentUpon>
     </Compile>
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SchedulePage.xaml.cs">
+    <Compile Include="Pages\SchedulePage.xaml.cs">
       <DependentUpon>SchedulePage.xaml</DependentUpon>
     </Compile>
   </ItemGroup>
@@ -170,27 +170,27 @@
     <None Include="Package.StoreAssociation.xml" />
   </ItemGroup>
   <ItemGroup>
-    <Page Include="AttendenceAndHonorsPage.xaml">
+    <Page Include="Pages\AttendenceAndHonorsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="CourseDetailPage.xaml">
+    <Page Include="Pages\CourseDetailPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="CreditsPage.xaml">
+    <Page Include="Pages\CreditsPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="DonatePage.xaml">
+    <Page Include="Pages\DonatePage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="FeedbackPage.xaml">
+    <Page Include="Pages\FeedbackPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="PortalPage.xaml">
+    <Page Include="Pages\PortalPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
@@ -199,23 +199,23 @@
       <Generator>MSBuild:Compile</Generator>
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Page>
-    <Page Include="LoginPage.xaml">
+    <Page Include="Pages\LoginPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="CurriculumPage.xaml">
+    <Page Include="Pages\CurriculumPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="MainPage.xaml">
+    <Page Include="Pages\MainPage.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </Page>
-    <Page Include="MidAlertPage.xaml">
+    <Page Include="Pages\MidAlertPage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>
-    <Page Include="SchedulePage.xaml">
+    <Page Include="Pages\SchedulePage.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>
     </Page>

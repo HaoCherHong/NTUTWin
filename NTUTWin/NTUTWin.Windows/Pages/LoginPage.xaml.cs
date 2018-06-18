@@ -34,12 +34,10 @@ namespace NTUTWin
 
             //await progressbar.ShowAsync();
 
-            var loginResult = await NPAPI.LoginNPortal(id, password);
-
-            //await progressbar.HideAsync();
-
-            if (loginResult.Success)
+            try
             {
+                await NPAPI.LoginNPortal(id, password);
+
                 //Store logged id, password
                 var roamingSettings = Windows.Storage.ApplicationData.Current.RoamingSettings;
 
@@ -57,9 +55,9 @@ namespace NTUTWin
                 if (Frame.CanGoBack)
                     Frame.GoBack();
             }
-            else
+            catch (Exception e)
             {
-                errorTextBlock.Text = loginResult.Message;
+                errorTextBlock.Text = e.Message;
                 errorTextBlock.Visibility = Visibility.Visible;
             }
 
