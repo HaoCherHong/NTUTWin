@@ -17,6 +17,8 @@
     </Compile>
     <Compile Include="$(MSBuildThisFileDirectory)BlowFishCS.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)AttendenceAndHonors.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)CaptchaHelper.cs" />
+    <Compile Include="$(MSBuildThisFileDirectory)ConnectionHelper.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Course.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)CourseDetail.cs" />
     <Compile Include="$(MSBuildThisFileDirectory)Credits.cs" />
