@@ -54,7 +54,7 @@
 
             </Grid.RowDefinitions>
             <StackPanel Orientation="Horizontal" Margin="15" Grid.Row="0">
-                <Image Source="Assets/Logo.png" Height="40" Margin="0,0,10,0"/>
+                <Image Source="/Assets/Logo.png" Height="40" Margin="0,0,10,0"/>
                 <TextBlock Text="北科窗戶" VerticalAlignment="Center" FontSize="26"/>
             </StackPanel>
             <ListView Name="listView" SelectionMode="Single" IsItemClickEnabled="False" Grid.Row="1" SelectionChanged="ListView_SelectionChanged">
