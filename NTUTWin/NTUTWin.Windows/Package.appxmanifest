@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Package xmlns="http://schemas.microsoft.com/appx/2010/manifest" xmlns:m2="http://schemas.microsoft.com/appx/2013/manifest">
-  <Identity Name="38760Hao-CherHong.24548C2F126FC" Publisher="CN=AE5BFBEA-FCC1-4B12-B68F-B944F93F60A7" Version="1.9.8.0" />
+  <Identity Name="38760Hao-CherHong.24548C2F126FC" Publisher="CN=AE5BFBEA-FCC1-4B12-B68F-B944F93F60A7" Version="1.10.0.0" />
   <Properties>
     <DisplayName>北科窗戶</DisplayName>
     <PublisherDisplayName>Hao-Cher Hong</PublisherDisplayName>

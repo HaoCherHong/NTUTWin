@@ -15,6 +15,10 @@ namespace NTUTWin
             public float Credits { get; set; }
             public float Grade { get; set; }
             public string Note { get; set; }
+            public bool IsCoreCurriculum { get; set; }
+            public bool IsElectiveCurriculum { get; set; }
+            public string CoreCurriculumType { get; set; }
+
             public CourseDetail Detail { get; set; }
         }
 
@@ -26,6 +30,7 @@ namespace NTUTWin
             public float CreditsWanted { get; set; }
             public float CreditsGot { get; set; }
             public List<Credit> Credits { get; set; }
+            public bool IsComplete { get; set; }
 
             public override string ToString()
             {
@@ -40,6 +45,10 @@ namespace NTUTWin
         public Dictionary<string, float> TotalTypeCredits { get; private set; } = new Dictionary<string, float>();
 
         public Dictionary<string, float> TotalDetailTypeCredits { get; private set; } = new Dictionary<string, float>();
+
+        public Dictionary<string, float> TotalCoreCurriculumCredits { get; private set; } = new Dictionary<string, float>();
+
+        public float TotalElectiveCurriculumCredits { get; private set; } = 0;
 
         public static async Task<Credits> Parse(string html)
         {
@@ -80,6 +89,16 @@ namespace NTUTWin
 						else
 							credits.TotalTypeCredits.Add(credit.Type, credit.Credits);
 
+                        if (credit.IsElectiveCurriculum)
+                            credits.TotalElectiveCurriculumCredits += credit.Credits;
+                        else if (credit.IsCoreCurriculum)
+                        {
+                            if (credits.TotalCoreCurriculumCredits.ContainsKey(credit.CoreCurriculumType))
+                                credits.TotalCoreCurriculumCredits[credit.CoreCurriculumType] += credit.Credits;
+                            else
+                                credits.TotalCoreCurriculumCredits.Add(credit.CoreCurriculumType, credit.Credits);
+                        }
+
 						//Sum semester credits
 						credits.TotalCreditsGot += credit.Credits;
 					}
@@ -101,10 +120,16 @@ namespace NTUTWin
             //Parse Summary
             var summaryRegex = new Regex("<th colspan=2 BGCOLOR=99FF99>[^<]+<td colspan=6 align=center>\n([^\n]+)", RegexOptions.Multiline | RegexOptions.IgnoreCase);
             var summaryMatches = summaryRegex.Matches(html);
-            semester.TotalAverage = TryGetFloat(summaryMatches[0].Groups[1].Value, 0);
-            semester.ConductGrade = TryGetFloat(summaryMatches[1].Groups[1].Value, 0);
-            semester.CreditsWanted = TryGetFloat(summaryMatches[2].Groups[1].Value, 0);
-            semester.CreditsGot = TryGetFloat(summaryMatches[3].Groups[1].Value, 0);
+            if (html.Contains("學期成績尚未到齊") || summaryMatches.Count != 4)
+                semester.IsComplete = false;
+            else
+            {
+                semester.TotalAverage = TryGetFloat(summaryMatches[0].Groups[1].Value, 0);
+                semester.ConductGrade = TryGetFloat(summaryMatches[1].Groups[1].Value, 0);
+                semester.CreditsWanted = TryGetFloat(summaryMatches[2].Groups[1].Value, 0);
+                semester.CreditsGot = TryGetFloat(summaryMatches[3].Groups[1].Value, 0);
+                semester.IsComplete = true;
+            }
 
             //Parse Credits
             var creditRegex = new Regex(
@@ -129,6 +154,12 @@ namespace NTUTWin
                 credit.Grade = TryGetFloat(creditMatch.Groups[7].Value, 0f);
                 credit.Note = creditMatch.Groups[8].Value;
                 credit.Note = new Regex("<[^>]+>").Replace(credit.Note, " ").Trim();
+
+                var coreCurriculumMatch = new Regex("博雅核心(?:－|—)(.{2})").Match(credit.Note);
+
+                credit.IsCoreCurriculum = coreCurriculumMatch.Success;
+                credit.IsElectiveCurriculum = credit.Note.Contains("博雅選修");
+                credit.CoreCurriculumType = credit.IsCoreCurriculum ? coreCurriculumMatch.Groups[1].Value : null;
                 credits.Add(credit);
             }
             semester.Credits = credits;

@@ -78,6 +78,13 @@ namespace NTUTWin
             foreach (string key in credits.TotalDetailTypeCredits.Keys)
                 summaryTextBlock.Text += string.Format("{0}:\t{1}\n", key, credits.TotalDetailTypeCredits[key]);
 
+            summaryTextBlock.Text += "\n";
+
+            summaryTextBlock.Text += string.Format("博雅選修:\t{0}\n", credits.TotalElectiveCurriculumCredits);
+            summaryTextBlock.Text += "博雅核心:\n";
+            foreach (string key in credits.TotalCoreCurriculumCredits.Keys)
+                summaryTextBlock.Text += string.Format("　　{0}:\t{1}\n", key, credits.TotalCoreCurriculumCredits[key]);
+
             //Setup combobox
             semestersComboBox.ItemsSource = credits.Semesters;
             if (credits.Semesters.Count > 0)
@@ -94,7 +101,9 @@ namespace NTUTWin
         private void ApplySemester(Credits.Semester semester)
         {
             //Fill summary
-            semesterSummaryTextBlock.Text = string.Format(
+            if (semester.IsComplete)
+            {
+                semesterSummaryTextBlock.Text = string.Format(
                 "總平均:\t\t{0}\n" +
                 "操行成績:\t{1}\n" +
                 "修習總學分數:\t{2}\n" +
@@ -103,6 +112,12 @@ namespace NTUTWin
                 semester.ConductGrade,
                 semester.CreditsWanted,
                 semester.CreditsGot);
+            }
+            else
+            {
+                semesterSummaryTextBlock.Text = "* 學期成績尚未到齊";
+            }
+            
 
             //Fill credits grid
             creditsGrid.Children.Clear();
