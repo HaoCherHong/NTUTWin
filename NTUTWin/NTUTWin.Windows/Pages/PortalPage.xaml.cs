@@ -20,10 +20,13 @@ namespace NTUTWin
 		public PortalPage()
 		{
 			this.InitializeComponent();
-			webView.FrameDOMContentLoaded += WebView_FrameDOMContentLoaded;
 			webView.NavigationStarting += WebView_NavigationStarting;
-			webView.FrameNavigationCompleted += WebView_FrameNavigationCompleted;
-		}
+            //webView.FrameDOMContentLoaded += WebView_FrameDOMContentLoaded;
+			//webView.FrameNavigationCompleted += WebView_FrameNavigationCompleted;
+            webView.DOMContentLoaded += WebView_FrameDOMContentLoaded;
+            webView.NavigationCompleted += WebView_FrameNavigationCompleted;
+
+        }
 
 		private void WebView_FrameNavigationCompleted(WebView sender, WebViewNavigationCompletedEventArgs args)
 		{
