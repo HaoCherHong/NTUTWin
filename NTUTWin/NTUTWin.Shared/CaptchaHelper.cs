@@ -34,16 +34,11 @@ namespace NTUTWin
             //Check if we have JSESSIONID
             var roamingSettings = Windows.Storage.ApplicationData.Current.RoamingSettings;
             if (!roamingSettings.Values.ContainsKey("JSESSIONID"))
-                await Request("https://nportal.ntut.edu.tw/", "GET");
+                await connectionHelper.Request("https://nportal.ntut.edu.tw/", "GET");
 
             var captchaImage = await connectionHelper.RequestWritableBitmap("https://nportal.ntut.edu.tw/authImage.do", "GET");
 
             return GetClearImage(captchaImage);
-        }
-
-        private Task Request(string v1, string v2)
-        {
-            throw new NotImplementedException();
         }
 
         private WriteableBitmap GetClearImage(WriteableBitmap source)

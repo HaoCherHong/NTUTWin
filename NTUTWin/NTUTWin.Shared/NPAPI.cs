@@ -228,7 +228,9 @@ namespace NTUTWin
             var url = "https://nportal.ntut.edu.tw/myPortal.do";
             var responseString = await connectionHelper.RequestString(url, "GET");
 
-            return !responseString.Contains("您目前已和伺服器中斷連線，請重新登入！") && !responseString.Contains("您的帳號已於其他地方登入。");
+            return 
+                !responseString.Contains("您目前已和伺服器中斷連線") &&
+                !responseString.Contains("您的帳號已於其他地方登入。");
         }
     }
 }

@@ -36,6 +36,9 @@ namespace NTUTWin
 
             try
             {
+                if (id.Length == 0 || password.Length == 0)
+                    throw new Exception("請輸入帳號與密碼");
+
                 await NPAPI.LoginNPortal(id, password);
 
                 //Store logged id, password
