@@ -2,14 +2,15 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Net;
-using System.Net.Http;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using Windows.Storage;
 using Windows.Storage.Streams;
 using Windows.UI.Xaml.Media.Imaging;
+using Windows.Web.Http;
+using Windows.Web.Http.Filters;
+using WebUtility = System.Net.WebUtility;
 
 namespace NTUTWin
 {
@@ -39,7 +40,8 @@ namespace NTUTWin
         public async Task<string> RequestString(string url, string method = "get", Dictionary<string, object> parameters = null, Dictionary<string, object> headers = null, bool useBig5Encoding = false)
         {
             var response = await Request(url, method, parameters, headers);
-            var responseString = await ConvertStreamToString(await response.Content.ReadAsStreamAsync(), useBig5Encoding);
+            var inputStream = await response.Content.ReadAsInputStreamAsync();
+            var responseString = await ConvertStreamToString(inputStream.AsStreamForRead(), useBig5Encoding);
             response.Dispose();
             return responseString;
         }
@@ -47,26 +49,35 @@ namespace NTUTWin
         public async Task<WriteableBitmap> RequestWritableBitmap(string url, string method = "get", Dictionary<string, object> parameters = null, Dictionary<string, object> headers = null)
         {
             var response = await Request(url, method, parameters, headers);
-            WriteableBitmap writableBitmap = await ConvertStreamToWritableBitmap(await response.Content.ReadAsStreamAsync());
+            var inputStream = await response.Content.ReadAsInputStreamAsync();
+            WriteableBitmap writableBitmap = await ConvertStreamToWritableBitmap(inputStream.AsStreamForRead());
             response.Dispose();
             return writableBitmap;
         }
 
         public async Task<HttpResponseMessage> Request(string url, string method = "get", Dictionary<string, object> parameters = null, Dictionary<string, object> headers = null)
         {
+            url = url.Replace("http://", "https://");
+
             method = method.ToLower();
             if (method != "post" && method != "get")
                 throw new ArgumentException("Unsuportted method");
 
+            var uri = new Uri(url);
+
             Debug.WriteLine(url);
 
+            var filter = new HttpBaseProtocolFilter();
+            filter.AllowAutoRedirect = false;
 
-            CookieContainer cookieContainer = new CookieContainer();
-            HttpClientHandler handler = new HttpClientHandler();
-            handler.CookieContainer = cookieContainer;
+            SetCookieFromRoamingSettings(filter, "JSESSIONID", uri.Host, "/");
+            SetCookieFromRoamingSettings(filter, "cookiesession1", uri.Host, "/");
+            SetCookieFromRoamingSettings(filter, "UqZBpD3n", uri.Host, "/");
 
-            HttpClient client = new HttpClient(handler);
+            var client = new HttpClient(filter);
+
             client.DefaultRequestHeaders.IfModifiedSince = new DateTimeOffset(new DateTime(1970, 1, 1));
+
 
             //Set headesr
             if (headers != null)
@@ -75,16 +86,6 @@ namespace NTUTWin
                 {
                     client.DefaultRequestHeaders.Add(key, headers[key].ToString());
                 }
-            }
-
-            //Get roaming settings
-            var roamingSettings = ApplicationData.Current.RoamingSettings;
-
-            var sessionId = (string)roamingSettings.Values["JSESSIONID"];
-            if (sessionId != null)
-            {
-                var uri = new Uri(url);
-                cookieContainer.Add(new Uri(uri.AbsoluteUri.Replace(uri.AbsolutePath, "")), new Cookie("JSESSIONID", sessionId));
             }
 
             string requestData = null;
@@ -117,34 +118,25 @@ namespace NTUTWin
                 }
             }
 
-            //Start fetching response
-            StringContent postContent = null;
+            HttpStringContent postContent = null;
             if (requestData != null)
-                postContent = new StringContent(requestData, Encoding.UTF8, "application/x-www-form-urlencoded");
+                postContent = new HttpStringContent(requestData, Windows.Storage.Streams.UnicodeEncoding.Utf8, "application/x-www-form-urlencoded");
+            var cookies = filter.CookieManager.GetCookies(uri);
 
-            var response = await (method == "get" ? client.GetAsync(url) : client.PostAsync(url, postContent));
+            var response = await (method == "get" ? client.GetAsync(uri, HttpCompletionOption.ResponseContentRead) : client.PostAsync(uri, postContent));
 
-            IEnumerable<string> values;
-            if (response.Headers.TryGetValues("Set-Cookie", out values))
+            string headerValue;
+            if (response.Headers.TryGetValue("Set-Cookie", out headerValue))
             {
-                var it = values.GetEnumerator();
-                if (it.MoveNext())
-                {
-                    var setCookieHeader = it.Current;
-                    var match = Regex.Match(setCookieHeader, "JSESSIONID=([a-zA-Z0-9-]+)");
-                    if (match.Success)
-                    {
-                        sessionId = match.Groups[1].Value;
-                        //Save to roaming settings
-                        if (roamingSettings.Values.ContainsKey("JSESSIONID"))
-                            roamingSettings.Values["JSESSIONID"] = sessionId;
-                        else
-                            roamingSettings.Values.Add("JSESSIONID", sessionId);
-
-                        Debug.WriteLine("New JSESSIONID: " + sessionId);
-                    }
-                }
+                var setCookieHeader = headerValue;
+                SetCookieToRoamingSettings("JSESSIONID", setCookieHeader);
+                SetCookieToRoamingSettings("cookiesession1", setCookieHeader);
+                SetCookieToRoamingSettings("UqZBpD3n", setCookieHeader);
             }
+
+
+            if (response.StatusCode == HttpStatusCode.Found || response.StatusCode == HttpStatusCode.MovedPermanently)
+                return await Request(response.Headers.Location.ToString());
 
             return response;
         }
@@ -152,6 +144,36 @@ namespace NTUTWin
         public async Task<string> RequestBig5String(string url, string method = "get", Dictionary<string, object> parameters = null, Dictionary<string, object> headers = null)
         {
             return await RequestString(url, method, parameters, headers, true);
+        }
+
+        private void SetCookieFromRoamingSettings(HttpBaseProtocolFilter filter, string name, string host, string path)
+        {
+            var roamingSettings = ApplicationData.Current.RoamingSettings;
+
+            var value = (string)roamingSettings.Values[name];
+            if (value != null)
+            {
+                var cookie = new HttpCookie(name, host, path);
+                cookie.Value = value;
+                filter.CookieManager.SetCookie(cookie);
+            }
+        }
+
+        private void SetCookieToRoamingSettings(string name, string setCookieHeader)
+        {
+            var roamingSettings = ApplicationData.Current.RoamingSettings;
+
+            var match = Regex.Match(setCookieHeader, name + "=([a-zA-Z0-9-]+)");
+            if (match.Success)
+            {
+                var value = match.Groups[1].Value;
+                if (roamingSettings.Values.ContainsKey(name))
+                    roamingSettings.Values[name] = value;
+                else
+                    roamingSettings.Values.Add(name, value);
+
+                Debug.WriteLine("New " + name + ": " + value);
+            }
         }
 
         private async Task<string> ConvertStreamToString(Stream stream, bool useBig5Encoding = false)

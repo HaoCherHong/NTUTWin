@@ -73,7 +73,7 @@ namespace NTUTWin
             //Login aps
             await LoginSubSystem("https://nportal.ntut.edu.tw/ssoIndex.do?apUrl=https://aps.ntut.edu.tw/course/tw/courseSID.jsp&apOu=aa_0010-&sso=true&datetime1=" + connectionHelper.GetTimeStampString());
             //Login aps-stu
-            await LoginSubSystem("https://nportal.ntut.edu.tw/ssoIndex.do?apUrl=https://aps-stu.ntut.edu.tw/StuQuery/LoginSID.jsp&apOu=aa_003&sso=big5&datetime1=" + connectionHelper.GetTimeStampString());
+            await LoginSubSystem("https://nportal.ntut.edu.tw/ssoIndex.do?apUrl=https://aps-course.ntut.edu.tw/StuQuery/LoginSID.jsp&apOu=aa_003_LB&sso=big5&datetime1=" + connectionHelper.GetTimeStampString());
         }
 
         public static async Task LogoutNPortal()
@@ -81,7 +81,7 @@ namespace NTUTWin
             var response = await connectionHelper.Request("https://nportal.ntut.edu.tw/logout.do", "GET");
 
             if (!response.IsSuccessStatusCode)
-                throw new Exception("登入失敗");
+                throw new Exception("登出失敗");
 
             var roamingSettings = ApplicationData.Current.RoamingSettings;
             roamingSettings.Values.Remove("JSESSIONID");
@@ -190,7 +190,7 @@ namespace NTUTWin
 
         public static async Task<MidAlerts> GetMidAlerts()
         {
-            var url = "https://aps-stu.ntut.edu.tw/StuQuery/QrySCWarn.jsp";
+            var url = "https://aps-course.ntut.edu.tw/StuQuery/QrySCWarn.jsp";
             var responseString = await connectionHelper.RequestNPortal(url);
 
             return MidAlerts.Parse(responseString);
@@ -198,7 +198,7 @@ namespace NTUTWin
 
         public static async Task<Credits> GetCredits()
         {
-            var url = "https://aps-stu.ntut.edu.tw/StuQuery/QryScore.jsp";
+            var url = "https://aps-course.ntut.edu.tw/StuQuery/QryScore.jsp";
             var parameters = new Dictionary<string, object>() { { "format", -2 } };
             var responseString = await connectionHelper.RequestNPortal(url, "POST", parameters);
 
@@ -216,7 +216,7 @@ namespace NTUTWin
 
         public static async Task<AttendenceAndHonors> GetAttendenceAndHonors()
         {
-            var url = "https://aps-stu.ntut.edu.tw/StuQuery/QryAbsRew.jsp";
+            var url = "https://aps-course.ntut.edu.tw/StuQuery/QryAbsRew.jsp";
             var parameters = new Dictionary<string, object>() { { "format", -2 } };
             var responseString = await connectionHelper.RequestNPortal(url, "POST", parameters);
 
